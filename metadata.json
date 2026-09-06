@@ -1,0 +1,6 @@
+{
+  "name": "BMW 3D Car Design",
+  "description": "Interactive multi-vehicle visualizer featuring authentic vehicle photography, real-life speed physics mechanics, reactive background environment ambience soundscape controller (city traffic flow, circuit race track atmosphere, tokyo highway, monaco tunnel), active exhaust sound synthesizer with decat backfires, Recharts dynamic torque and horsepower dyno curves, and full multi-angle studio showcase.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
