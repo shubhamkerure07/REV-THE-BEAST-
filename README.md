@@ -32,9 +32,8 @@ The project brings together car specifications, performance information, visuals
 
 ---
 
-## 📸 Project Preview
-
-> Add screenshots of your project here.
 
 ```text
 Coming soon 🚧
+
+This version is **much safer for your actual repo** because it says *“a selection of performance cars”* rather than pretending you have a huge car database.
