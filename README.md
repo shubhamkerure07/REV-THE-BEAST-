@@ -7,8 +7,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![React](https://img.shields.io/badge/React-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-F59E0B?style=for-the-badge)](LICENSE)
 
-*A passion project for people who love cars, engines, speed and engineering.*
+*An interactive automotive web experience for car and engine enthusiasts.*
 
 </div>
 
@@ -16,9 +17,9 @@
 
 ## 🚗 What is REV THE BEAST?
 
-**REV THE BEAST** is an interactive automotive web experience — a place where instead of reading a flat spec sheet, you **explore** performance machines, **dig into** engine and performance data, and actually ***hear*** them roar.
+**REV THE BEAST** is an interactive automotive experience designed for enthusiasts who appreciate high-performance machinery. Rather than reviewing static specifications, you explore curated performance machines, examine powertrain telemetry, and hear high-fidelity engine acoustics.
 
-Built by a Mechatronics Engineering student who loves cars just as much as code.
+Developed by a Mechatronics Engineering student with a deep passion for automotive powertrains and interactive web engineering.
 
 ---
 
@@ -26,71 +27,34 @@ Built by a Mechatronics Engineering student who loves cars just as much as code.
 
 | Feature | Description |
 |:---:|:---|
-| 🔊 **Engine Sounds** | Listen to real engine audio for each car |
-| ⚙️ **Engine Specs** | Horsepower, torque, displacement & more |
-| 📊 **Performance Data** | 0-100 times, top speed, drivetrain info |
-| 🎨 **Dark Automotive UI** | Immersive, car-inspired dark interface |
-| 📱 **Responsive Design** | Works beautifully on all screen sizes |
-| ⚡ **Animated Interface** | Smooth transitions and interactions |
+| 🔊 **Engine Acoustics** | High-fidelity sound playback for iconic performance engines |
+| 📊 **Powertrain Specs** | Horsepower, torque, displacement, and engine configurations |
+| ⚡ **Performance Metrics** | Acceleration figures (0–100 km/h), top speed, and drivetrain architecture |
+| 🏎️ **Dark Cockpit UI** | Responsive, high-contrast automotive interface |
 
 ---
 
-## 🛠️ Built With
+## 🛠️ Tech Stack
 
-- ⚛️ **React** — Component-based UI
-- 🟦 **TypeScript** — Type safety
-- ⚡ **Vite** — Lightning-fast builds
-- 🔊 **Web Audio API** — Engine sound playback
-- 🎨 **CSS** — Custom automotive styling
+- **Frontend**: React 18, TypeScript, Vite
+- **Styling**: Modern CSS3 animations, cockpit styling
+- **Media**: Web Audio API integration for engine playback
 
 ---
 
 ## 🚀 Getting Started
 
-`ash
-# Clone the repository
+```bash
 git clone https://github.com/shubhamkerure07/REV-THE-BEAST-.git
 cd REV-THE-BEAST-
-
-# Install dependencies
 npm install
-
-# Start the dev server
 npm run dev
-`
-
-Open [http://localhost:5173](http://localhost:5173) and feel the power! 🔥
+```
 
 ---
 
-## 🔮 Upcoming Features
+## 👨‍💻 Author
 
-- [ ] More cars (expanding the garage)
-- [ ] RPM rev-up animation + sound interaction
-- [ ] Car comparison mode
-- [ ] Turbo / Supercharged engine variants
-- [ ] Mobile swipe gestures
-
----
-
-## 💡 Inspiration
-
-> *"I sit between mechanical, electronics and code — which is exactly why mechatronics fits."*
-
-This project was born from a love of machines and a desire to make car specs feel as exciting as the cars themselves.
-
----
-
-## 👤 Author
-
-**Shubham Kerure** — Mechatronics Engineering Student
-- GitHub: [@shubhamkerure07](https://github.com/shubhamkerure07)
+**Shubham Kerure** — Mechatronics Engineering Student, MITE  
+- GitHub: [@shubhamkerure07](https://github.com/shubhamkerure07)  
 - LinkedIn: [Shubham Kerure](https://www.linkedin.com/in/shubham-kerure-23350938b)
-
----
-
-<div align="center">
-
-**Built for car lovers. By a car lover. 🏁**
-
-</div>
