@@ -390,9 +390,15 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
               <div
                 onMouseDown={() => handlePedalDown(1.0)}
                 onMouseUp={handlePedalUp}
-                onTouchStart={() => handlePedalDown(1.0)}
-                onTouchEnd={handlePedalUp}
-                className={`relative w-full h-36 rounded-2xl border-2 transition-all flex flex-col items-center justify-center cursor-pointer select-none shadow-2xl ${
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  handlePedalDown(1.0);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  handlePedalUp();
+                }}
+                className={`relative w-full h-36 rounded-2xl border-2 transition-all flex flex-col items-center justify-center cursor-pointer select-none touch-none shadow-2xl ${
                   isPedalPressed
                     ? 'bg-gradient-to-b from-amber-500 via-amber-600 to-rose-600 border-amber-300 scale-[0.98] shadow-amber-500/40 text-black'
                     : 'bg-gradient-to-b from-neutral-800 to-neutral-900 border-white/20 hover:border-white/40 text-white'

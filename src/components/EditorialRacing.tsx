@@ -813,9 +813,15 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
               <button
                 onMouseDown={() => setIsBraking(true)}
                 onMouseUp={() => setIsBraking(false)}
-                onTouchStart={() => setIsBraking(true)}
-                onTouchEnd={() => setIsBraking(false)}
-                className={`flex-1 py-4 px-3 rounded-xl border text-center font-mono font-bold text-xs uppercase tracking-wider transition-all select-none ${
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  setIsBraking(true);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setIsBraking(false);
+                }}
+                className={`flex-1 py-4 px-3 rounded-xl border text-center font-mono font-bold text-xs uppercase tracking-wider transition-all select-none touch-none ${
                   isBraking
                     ? 'bg-red-600 text-white border-red-500 shadow-[0_0_20px_rgba(239,68,68,0.6)] scale-95'
                     : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
@@ -828,9 +834,15 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
               <button
                 onMouseDown={() => setThrottle(1.0)}
                 onMouseUp={() => setThrottle(0.0)}
-                onTouchStart={() => setThrottle(1.0)}
-                onTouchEnd={() => setThrottle(0.0)}
-                className={`flex-1 py-4 px-3 rounded-xl border text-center font-mono font-black text-xs uppercase tracking-wider transition-all select-none ${
+                onTouchStart={(e) => {
+                  e.preventDefault();
+                  setThrottle(1.0);
+                }}
+                onTouchEnd={(e) => {
+                  e.preventDefault();
+                  setThrottle(0.0);
+                }}
+                className={`flex-1 py-4 px-3 rounded-xl border text-center font-mono font-black text-xs uppercase tracking-wider transition-all select-none touch-none ${
                   throttle > 0.5
                     ? 'bg-amber-400 text-black border-amber-300 shadow-[0_0_25px_rgba(251,191,36,0.7)] scale-95'
                     : 'bg-white text-black border-white hover:bg-neutral-200'

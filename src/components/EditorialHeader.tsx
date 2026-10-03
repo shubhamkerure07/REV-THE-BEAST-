@@ -41,6 +41,7 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
   const navItems: { id: AppView; label: string; icon: React.ReactNode }[] = [
     { id: 'home', label: 'EDITORIAL', icon: <Compass className="w-3.5 h-3.5" /> },
     { id: 'garage', label: 'GARAGE', icon: <Car className="w-3.5 h-3.5" /> },
+    { id: 'customizer', label: 'CUSTOMIZE', icon: <Sliders className="w-3.5 h-3.5" /> },
     { id: 'sound-lab', label: 'SOUND LAB', icon: <Activity className="w-3.5 h-3.5" /> },
     { id: 'ai-lab', label: 'BEAST AI', icon: <Sparkles className="w-3.5 h-3.5" /> },
     { id: 'racing', label: 'CIRCUIT', icon: <Flag className="w-3.5 h-3.5" /> },

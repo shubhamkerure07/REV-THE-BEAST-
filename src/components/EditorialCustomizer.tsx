@@ -153,7 +153,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
     <div className="w-full min-h-screen bg-[#08080a] text-neutral-100 select-none pt-24 pb-24 px-6 sm:px-12 md:px-16">
       <div className="max-w-7xl mx-auto">
         {/* Top Navigation */}
-        <div className="flex items-center justify-between border-b border-white/[0.08] pb-6 mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6 mb-8">
           <button
             onClick={onBack}
             className="flex items-center gap-2 text-neutral-400 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors cursor-pointer group"
@@ -162,17 +162,17 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             <span>BACK TO DETAILS</span>
           </button>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             <button
               onClick={handleSaveBuild}
-              className="px-5 py-2 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
+              className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center"
             >
               SAVE BUILD
             </button>
 
             <button
               onClick={() => onRace(config.modelType)}
-              className="px-6 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center gap-2"
+              className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 text-center"
             >
               <Flag className="w-3.5 h-3.5" />
               <span>RACE THIS SPEC</span>
@@ -251,7 +251,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
           {/* RIGHT 5 COLS: CUSTOMIZER CATEGORIES & OPTIONS */}
           <div className="lg:col-span-5 space-y-6">
             {/* Category Navigation Bar */}
-            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.08]">
+            <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-x-auto scrollbar-none">
               {[
                 { id: 'paint', label: 'PAINT', icon: <Palette className="w-3.5 h-3.5" /> },
                 { id: 'wheels', label: 'WHEELS', icon: <Disc3 className="w-3.5 h-3.5" /> },
