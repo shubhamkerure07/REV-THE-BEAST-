@@ -137,6 +137,9 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                   <img
                     src={item.photos.hero.url}
                     alt={item.name}
+                    onError={(e) => {
+                      e.currentTarget.src = item.photos.side?.url || item.photos.front?.url;
+                    }}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-black/30" />

@@ -189,6 +189,9 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
               <img
                 src={media.photos.side.url}
                 alt={media.name}
+                onError={(e) => {
+                  e.currentTarget.src = media.photos.hero.url;
+                }}
                 className="w-full h-full object-cover object-center"
               />
 

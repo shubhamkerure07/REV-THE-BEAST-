@@ -72,6 +72,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <img
                 src={media.photos.side.url}
                 alt="Side Profile"
+                onError={(e) => {
+                  e.currentTarget.src = media.photos.hero.url;
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
@@ -97,6 +100,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 <img
                   src={media.photos.front.url}
                   alt="Front Angle"
+                  onError={(e) => {
+                    e.currentTarget.src = media.photos.hero.url;
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -115,6 +121,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 <img
                   src={media.photos.rear.url}
                   alt="Rear View"
+                  onError={(e) => {
+                    e.currentTarget.src = media.photos.hero.url;
+                  }}
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
@@ -196,22 +205,24 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <img
                 src={media.photos.engine.url}
                 alt="Engine Bay"
+                onError={(e) => {
+                  e.currentTarget.src = media.photos.hero.url;
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono uppercase font-bold border border-amber-400/30">
-                    60° V12 SYMPHONY
+                    {engine.soundProfile.toUpperCase()}
                   </span>
-                  <span className="text-xs font-mono text-neutral-400">8,700 RPM WIDE OPEN</span>
+                  <span className="text-xs font-mono text-neutral-400">{engine.redlineRpm} RPM REDLINE</span>
                 </div>
                 <h3 className="font-syne font-bold text-2xl text-white">
-                  6.5L Naturally Aspirated Multi-Point Injection
+                  {media.photos.engine.title || engine.name}
                 </h3>
                 <p className="text-xs text-neutral-300 font-sans mt-1 max-w-lg">
-                  Titanium valves, dry-sump scavenging pumps, and tuned carbon fiber intake plenum
-                  trumpets.
+                  {media.photos.engine.subtitle || engine.soundDescription}
                 </p>
               </div>
             </div>
@@ -245,6 +256,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <img
                 src={media.photos.exhaust.url}
                 alt="Exhaust System"
+                onError={(e) => {
+                  e.currentTarget.src = media.photos.hero.url;
+                }}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />

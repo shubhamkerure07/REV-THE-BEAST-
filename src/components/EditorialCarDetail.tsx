@@ -137,6 +137,9 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
           <img
             src={currentPhoto.url}
             alt={currentPhoto.title}
+            onError={(e) => {
+              e.currentTarget.src = media.photos.hero.url;
+            }}
             className="w-full h-full object-cover sm:object-contain object-center transition-all duration-700 ease-out"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/30 pointer-events-none" />
@@ -298,6 +301,9 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
             <img
               src={media.photos.engine.url}
               alt="Engine"
+              onError={(e) => {
+                e.currentTarget.src = media.photos.hero.url;
+              }}
               className="w-full h-full object-cover"
             />
           </div>
