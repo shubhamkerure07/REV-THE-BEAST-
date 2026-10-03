@@ -159,7 +159,25 @@ The application has been engineered to deliver an uncompromising native-app feel
 
 ---
 
-## 🌐 Deploy to Vercel (One-Click)
+## 🌐 Live Production Website
+
+The project is deployed live on Vercel and optimized for desktop, tablet, and mobile phones:
+
+> ### 🏎️ **Official Live URL:** **[https://rev-the-beast.vercel.app/](https://rev-the-beast.vercel.app/)**
+> 
+> *Experience curated 4K photography, physical combustion acoustic synthesis, and Grand Prix racing in your browser.*
+
+<br/>
+
+<div align="center">
+
+[![Visit Live Website](https://img.shields.io/badge/Open_Live_App-rev--the--beast.vercel.app-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://rev-the-beast.vercel.app/)
+
+</div>
+
+---
+
+## 🚀 Deploy Your Own to Vercel (One-Click)
 
 Deploy your own live instance of **REV // THE BEAST** in under 60 seconds:
 
@@ -178,7 +196,7 @@ vercel
 vercel --prod
 ```
 
-The repository includes a ready-to-use [`vercel.json`](file:///c:/Users/Shubham/mite/c%20language/REV-THE-BEAST-/vercel.json) preconfigured for Vite single-page applications, custom asset caching, and route rewrites.
+The repository includes a ready-to-use [`vercel.json`](vercel.json) preconfigured for Vite single-page applications, custom asset caching, and route rewrites.
 
 ---
 
