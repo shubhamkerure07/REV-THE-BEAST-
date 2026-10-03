@@ -125,6 +125,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
   // Vehicle data
   const media = getVehicleMedia(config.modelType);
   const engine = getEngineForModel(config.modelType);
+  const topSpeedKmh = parseInt(media.keySpecs.topSpeed) || 320;
   const maxRpm = engine.redlineRpm || 8000;
   const idleRpm = engine.idleRpm || 800;
 
@@ -289,7 +290,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
           newSpeed -= 95.0 * dt;
         }
 
-        newSpeed = Math.max(0, Math.min(media.specs.topSpeedKmh * 1.05, newSpeed));
+        newSpeed = Math.max(0, Math.min(topSpeedKmh * 1.05, newSpeed));
 
         // Track top speed
         setTopSpeedRecorded((prevTop) => Math.max(prevTop, Math.round(newSpeed)));
@@ -348,7 +349,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
     speedKmh,
     selectedTrack.distanceKm,
     engine,
-    media.specs.topSpeedKmh,
+    topSpeedKmh,
   ]);
 
   // Format Milliseconds to MM:SS.ms
@@ -366,7 +367,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
   const rpmPercent = Math.min(100, (rpm / maxRpm) * 100);
 
   // Speed-based blur/vibration intensity
-  const speedRatio = speedKmh / media.specs.topSpeedKmh;
+  const speedRatio = speedKmh / topSpeedKmh;
   const shakeOffset = speedRatio > 0.7 ? (Math.random() - 0.5) * (speedRatio * 8) : 0;
 
   return (
@@ -405,7 +406,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
             <div className="flex items-center gap-4 bg-white/[0.04] backdrop-blur-md border border-white/10 px-5 py-3 rounded-full">
               <div className="w-12 h-8 rounded overflow-hidden">
                 <img
-                  src={media.angles.side}
+                  src={media.photos.side.url}
                   alt={media.name}
                   className="w-full h-full object-cover"
                 />
@@ -423,7 +424,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
                   {engine.horsePower} HP
                 </div>
                 <div className="text-[10px] font-mono text-neutral-400">
-                  {media.specs.topSpeedKmh} KM/H
+                  {topSpeedKmh} KM/H
                 </div>
               </div>
             </div>
@@ -932,7 +933,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
               <div>
                 <div className="w-full h-48 rounded-xl overflow-hidden mb-4">
                   <img
-                    src={media.angles.hero}
+                    src={media.photos.hero.url}
                     alt={media.name}
                     className="w-full h-full object-cover"
                   />

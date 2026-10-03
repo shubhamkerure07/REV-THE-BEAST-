@@ -60,7 +60,7 @@ const INITIAL_CONFIG: CarConfigState = {
   driveSpeed: 1.0,
   exhaustSound: false,
   valveMode: 'sport',
-  engineProfile: 'coyote-v8',
+  engineProfile: 'v12-symphony',
 };
 
 export default function App() {
