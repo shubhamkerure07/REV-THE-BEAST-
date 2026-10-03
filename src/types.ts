@@ -24,6 +24,14 @@ export interface AeroConfig {
   rearDiffuserFins: boolean;
 }
 
+export type ExhaustStyle = 'quad' | 'dual' | 'center' | 'side';
+export type ExhaustMaterial = 'chrome' | 'titanium' | 'carbon' | 'racing';
+
+export interface ExhaustConfig {
+  style: ExhaustStyle;
+  material: ExhaustMaterial;
+}
+
 export interface OpenableParts {
   leftDoor: boolean;
   rightDoor: boolean;
@@ -44,9 +52,20 @@ export type StudioEnvironment =
   | 'showroom'
   | 'sunset';
 
-export type CameraPreset = 'hero' | 'front' | 'side' | 'rear' | 'top' | 'interior' | 'engine' | 'wheel';
+export type CameraPreset =
+  | 'hero'
+  | 'front'
+  | 'side'
+  | 'rear'
+  | 'top'
+  | 'interior'
+  | 'engine'
+  | 'wheel'
+  | 'exhaust'
+  | 'detail';
 
 export type CarModelType =
+  | 'lambo-aventador'
   | 'procedural-m4'
   | 'ferrari-sf90'
   | 'bugatti-chiron'
@@ -55,7 +74,9 @@ export type CarModelType =
   | 'mustang-gt'
   | 'gwagon-g63'
   | 'ninja-h2r'
-  | 'bmw-5series';
+  | 'bmw-5series'
+  | 'beast-ev'
+  | 'beast-v12-ai';
 
 export type EngineSoundProfile =
   | 's58-inline6'
@@ -65,7 +86,10 @@ export type EngineSoundProfile =
   | 'ferrari-v8'
   | 'bugatti-w16'
   | 'parallel-twin-270'
-  | 'custom-bobber-twin';
+  | 'custom-bobber-twin'
+  | 'v10-exotic'
+  | 'v12-symphony'
+  | 'electric-motor';
 
 export type ExhaustValveMode = 'quiet' | 'sport' | 'track';
 
@@ -75,7 +99,7 @@ export type GearPosition = 'P' | 'R' | 'N' | 'D' | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
 export type TurboBovStyle = 'wrc-flutter' | 'hks-ssqv' | 'greddy-surge' | 'tial-vent';
 
-export type ViewModeType = 'photos' | 'video' | 'engine-3d';
+export type ViewModeType = 'photos' | 'video' | 'engine-3d' | '3d-car';
 
 export interface EngineSpec {
   id: string;
@@ -84,7 +108,17 @@ export interface EngineSpec {
   type: string;
   displacement: string;
   cylinders: string;
-  aspiration: 'Twin-Turbo' | 'Naturally Aspirated' | 'Biturbo Hot-Inside-V' | 'Supercharged' | 'Twin-Scroll Turbo' | 'Quad-Turbo' | 'Naturally Aspirated Parallel Twin';
+  aspiration:
+    | 'Twin-Turbo'
+    | 'Naturally Aspirated'
+    | 'Biturbo Hot-Inside-V'
+    | 'Supercharged'
+    | 'Twin-Scroll Turbo'
+    | 'Quad-Turbo'
+    | 'Naturally Aspirated Parallel Twin'
+    | 'Naturally Aspirated V10'
+    | 'Naturally Aspirated V12'
+    | 'Quad-Motor Electric Drive';
   powerHp: number;
   powerKw: number;
   torqueNm: number;
@@ -111,6 +145,7 @@ export interface CarConfigState {
   haloGlowColor: string;
   wheels: WheelConfig;
   aero: AeroConfig;
+  exhaustConfig?: ExhaustConfig;
   openParts: OpenableParts;
   environment: StudioEnvironment;
   cameraPreset: CameraPreset;
@@ -156,4 +191,3 @@ export interface RealSpeedCalculation {
   gForceLongitudinal: number;
   isGearDecoupled: boolean;
 }
-

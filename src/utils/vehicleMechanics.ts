@@ -29,6 +29,34 @@ export function calculateTireCircumference(widthMm: number, aspect: number, rimI
 }
 
 export const VEHICLE_PHYSICS_PROFILES: Record<CarModelType, VehiclePhysicsProfile> = {
+  'lambo-aventador': {
+    name: 'Lamborghini Aventador SVJ',
+    curbWeightKg: 1525,
+    dragCoefficient: 0.33,
+    frontalAreaM2: 2.12,
+    rollingResistanceCoeff: 0.013,
+    driveType: 'AWD',
+    tireWidthMm: 355,
+    tireAspectRatio: 25,
+    rimDiameterInches: 21,
+    rollingCircumferenceM: calculateTireCircumference(355, 25, 21),
+    finalDriveRatio: 3.54,
+    // 7-speed Independent Shifting Rods (ISR)
+    gearRatios: {
+      1: 3.91,
+      2: 2.44,
+      3: 1.81,
+      4: 1.46,
+      5: 1.19,
+      6: 0.97,
+      7: 0.84,
+    },
+    redlineRpm: 8700,
+    idleRpm: 850,
+    maxPowerHp: 770,
+    maxTorqueNm: 720,
+    officialTopSpeedKmh: 352,
+  },
   'procedural-m4': {
     name: 'BMW M4 Competition Coupé (G82)',
     curbWeightKg: 1725,

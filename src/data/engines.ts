@@ -190,30 +190,99 @@ export const ENGINES: EngineSpec[] = [
     firingOrder: '270° Offset',
     vehicleModel: 're-shotgun650',
   },
+  {
+    id: 'beast-v12-spec',
+    name: 'Beast 6.5L Naturally Aspirated V12',
+    code: 'BEAST-V12-PRO',
+    type: '6.5-Liter 60° Naturally Aspirated 48V DOHC V12',
+    displacement: '6,498 cc',
+    cylinders: '60° V12 Titanium Rods & Inconel Valves',
+    aspiration: 'Naturally Aspirated V12',
+    powerHp: 890,
+    powerKw: 664,
+    torqueNm: 760,
+    torqueLbFt: 560,
+    redlineRpm: 9200,
+    idleRpm: 850,
+    maxBoostPsi: 0,
+    compressionRatio: '12.8:1',
+    soundProfile: 'v12-symphony',
+    soundDescription: 'Ultra-dense, velvety smooth 12-cylinder harmonic choir screaming to an astronomical 9,200 RPM.',
+    firingOrder: '1-12-4-9-2-11-6-7-3-10-5-8',
+    vehicleModel: 'beast-v12-ai',
+  },
+  {
+    id: 'beast-ev-spec',
+    name: 'Beast EV Quad-Motor Solid-State Drive',
+    code: 'BEAST-EV-PLATFORM',
+    type: 'Quad Permanent Magnet Synchronous Axial-Flux Motors',
+    displacement: '0 cc (Solid-State 120 kWh)',
+    cylinders: '4x Electric Axial-Flux Motors (All-Wheel Torque Vectoring)',
+    aspiration: 'Quad-Motor Electric Drive',
+    powerHp: 1914,
+    powerKw: 1427,
+    torqueNm: 2360,
+    torqueLbFt: 1740,
+    redlineRpm: 20000,
+    idleRpm: 0,
+    maxBoostPsi: 0,
+    compressionRatio: 'N/A',
+    soundProfile: 'electric-motor',
+    soundDescription: 'Futuristic IGBT 12kHz inverter carrier switching tone, planetary reduction gear whine, and regenerative magnetic deceleration hum.',
+    firingOrder: '3-Phase High-Frequency Inverter Modulation',
+    vehicleModel: 'beast-ev',
+  },
+  {
+    id: 'lambo-l539-v12',
+    name: 'Lamborghini 6.5L L539 Naturally Aspirated V12',
+    code: 'L539 60° V12',
+    type: '6.5-Liter 60° Naturally Aspirated Multi-Point Injection V12',
+    displacement: '6,498 cc',
+    cylinders: '60° V12 Aluminum-Silicon Alloy Block',
+    aspiration: 'Naturally Aspirated V12',
+    powerHp: 770,
+    powerKw: 566,
+    torqueNm: 720,
+    torqueLbFt: 531,
+    redlineRpm: 8700,
+    idleRpm: 850,
+    maxBoostPsi: 0,
+    compressionRatio: '11.8:1',
+    soundProfile: 'v12-symphony',
+    soundDescription: 'Legendary Sant\'Agata Bolognese naturally aspirated 6.5L V12 howl screaming to 8,700 RPM with pure titanium exhaust resonance.',
+    firingOrder: '1-12-4-9-2-11-6-7-3-10-5-8',
+    vehicleModel: 'lambo-aventador',
+  },
 ];
 
 export const ALL_ENGINES = ENGINES;
 
 export function getEngineForModel(modelType: CarModelType): EngineSpec {
   switch (modelType) {
+    case 'lambo-aventador':
+      return ENGINES.find((e) => e.id === 'lambo-l539-v12') || ENGINES[9];
+    case 'beast-v12-ai':
+      return ENGINES[9];
+    case 'beast-ev':
+      return ENGINES[10];
     case 'ferrari-sf90':
-      return ENGINES[5]; // Ferrari V8
+      return ENGINES[5];
     case 'bugatti-chiron':
-      return ENGINES[6]; // Bugatti W16
+      return ENGINES[6];
     case 're-gt650':
-      return ENGINES[7]; // RE GT650 Twin
+      return ENGINES[7];
     case 're-shotgun650':
-      return ENGINES[8]; // RE Shotgun 650
+      return ENGINES[8];
     case 'mustang-gt':
-      return ENGINES[1]; // Coyote V8
+      return ENGINES[1];
     case 'gwagon-g63':
-      return ENGINES[2]; // AMG M177 Biturbo V8
+      return ENGINES[2];
     case 'ninja-h2r':
-      return ENGINES[3]; // Supercharged I4
+      return ENGINES[3];
     case 'bmw-5series':
-      return ENGINES[4]; // B58 I6
+      return ENGINES[4];
     case 'procedural-m4':
     default:
-      return ENGINES[0]; // S58 Twin-Turbo I6
+      return ENGINES[0];
   }
 }

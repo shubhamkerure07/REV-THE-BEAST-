@@ -1,6 +1,22 @@
 import { CarModelType, CarSpecification } from '../types';
 
 export const VEHICLE_SPECS_MAP: Record<CarModelType, CarSpecification> = {
+  'lambo-aventador': {
+    model: 'Lamborghini Aventador SVJ (SuperVeloce Jota)',
+    generation: 'Sant\'Agata Bolognese Flagship V12',
+    engine: '6.5L Naturally Aspirated 60° V12 (L539)',
+    power: '770 HP (566 kW) @ 8,500 RPM',
+    torque: '720 Nm (531 lb-ft) @ 6,750 RPM',
+    acceleration: '0–100 km/h in 2.8 seconds (0-60 mph in 2.7s)',
+    topSpeed: '352 km/h (219 mph) Nürburgring 6:44.97 Lap Holder',
+    transmission: '7-Speed Independent Shifting Rods (ISR) Semi-Automatic',
+    drivetrain: 'Haldex Generation IV Electronically Controlled All-Wheel Drive',
+    weight: '1,525 kg (3,362 lbs) Carbon Fiber Monocoque',
+    length: '4,943 mm (194.6 in)',
+    width: '2,098 mm (82.6 in)',
+    height: '1,136 mm (44.7 in)',
+    wheelbase: '2,700 mm (106.3 in)',
+  },
   'procedural-m4': {
     model: 'BMW M4 Competition Coupé (G82)',
     generation: '2024 / 2025 Facelift',

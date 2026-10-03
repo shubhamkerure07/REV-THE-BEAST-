@@ -18,6 +18,7 @@ import {
 import { buildMustangGtModel } from './mustangModel';
 import { buildGwagonModel } from './gwagonModel';
 import { buildNinjaH2rModel } from './ninjaH2rModel';
+import { buildLamboAventadorModel } from './aventadorModel';
 import { UploadCloud, Box } from 'lucide-react';
 
 export interface CarViewerHandle {
@@ -43,6 +44,8 @@ const CAMERA_PRESET_TARGETS: Record<CameraPreset, { pos: [number, number, number
   interior: { pos: [-0.38, 1.05, 0.35], target: [-0.38, 0.8, 0.9] },
   engine: { pos: [0, 2.2, 1.2], target: [0, 0.6, 0.9] },
   wheel: { pos: [-2.1, 0.55, 1.8], target: [-0.96, 0.35, 1.42] },
+  exhaust: { pos: [0.8, 0.42, -3.4], target: [0, 0.25, -2.1] },
+  detail: { pos: [1.8, 1.1, 1.8], target: [0.6, 0.5, 0.8] },
 };
 
 export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, onCameraChange, onModelImported, onModelProcessingChange, onError }, ref) => {
@@ -60,6 +63,7 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
   const mustangRef = useRef<InteractiveModelInstance | null>(null);
   const gwagonRef = useRef<InteractiveModelInstance | null>(null);
   const ninjaH2rRef = useRef<InteractiveModelInstance | null>(null);
+  const lamboRef = useRef<InteractiveModelInstance | null>(null);
   const [isDragOver, setIsDragOver] = useState(false);
 
   // Road lines for driving mode
@@ -295,6 +299,8 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
         gwagonRef.current.updateAnimations(delta, config);
       } else if (config.modelType === 'ninja-h2r' && ninjaH2rRef.current) {
         ninjaH2rRef.current.updateAnimations(delta, config);
+      } else if (config.modelType === 'lambo-aventador' && lamboRef.current) {
+        lamboRef.current.updateAnimations(delta, config);
       } else if (config.modelType === 'custom-import' && customImportRef.current) {
         customImportRef.current.updateAnimations(delta, config);
       }
@@ -349,9 +355,21 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
     if (!sceneRef.current) return;
     const scene = sceneRef.current;
 
-    // 1. Procedural OEM M4
+    // 1. Procedural OEM M4 and Hypercar family
+    const isM4Family =
+      config.modelType === 'procedural-m4' ||
+      config.modelType === 'ferrari-sf90' ||
+      config.modelType === 'bugatti-chiron' ||
+      config.modelType === 'beast-v12-ai' ||
+      config.modelType === 'beast-ev' ||
+      config.modelType === 're-gt650' ||
+      config.modelType === 're-shotgun650';
+
     if (carInstanceRef.current) {
-      carInstanceRef.current.root.visible = config.modelType === 'procedural-m4';
+      carInstanceRef.current.root.visible = isM4Family;
+      if (isM4Family) {
+        carInstanceRef.current.updateConfig(config);
+      }
     }
 
     // 2. BMW 5 Series Twin-Turbo Sedan
@@ -445,7 +463,20 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
       ninjaH2rRef.current.root.visible = false;
     }
 
-    // 9. Custom Imported Model
+    // 9. Lamborghini Aventador SVJ V12 (GLB from automotive-configurator)
+    if (config.modelType === 'lambo-aventador') {
+      if (!lamboRef.current) {
+        const m = buildLamboAventadorModel(config);
+        lamboRef.current = m;
+        scene.add(m.root);
+      }
+      lamboRef.current.root.visible = true;
+      lamboRef.current.updateConfig(config);
+    } else if (lamboRef.current) {
+      lamboRef.current.root.visible = false;
+    }
+
+    // 10. Custom Imported Model
     if (customImportRef.current) {
       customImportRef.current.root.visible = config.modelType === 'custom-import';
       if (config.modelType === 'custom-import') {
@@ -456,7 +487,9 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
 
   // Update Car Config on Props change for whichever model is active
   useEffect(() => {
-    if (config.modelType === 'procedural-m4' && carInstanceRef.current) {
+    if (config.modelType === 'lambo-aventador' && lamboRef.current) {
+      lamboRef.current.updateConfig(config);
+    } else if (config.modelType === 'procedural-m4' && carInstanceRef.current) {
       carInstanceRef.current.updateConfig(config);
     } else if (config.modelType === 'bmw-5series' && bmw5SeriesRef.current) {
       bmw5SeriesRef.current.updateConfig(config);

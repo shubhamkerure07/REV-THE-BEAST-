@@ -24,6 +24,7 @@ import { getVehicleMedia, VehiclePhotoAngle, VehicleVideoReel } from '../data/ve
 import { engineSound } from '../utils/audio';
 import { UniqueBackground } from './UniqueBackground';
 import { EngineRevMachine3D } from './EngineRevMachine3D';
+import { CarViewer } from '../three/CarViewer';
 
 interface VehicleViewerProps {
   config: CarConfigState;
@@ -161,10 +162,15 @@ export const VehicleViewer: React.FC<VehicleViewerProps> = ({
       <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-40 z-0" />
 
       {/* Main Showcase Stage */}
-      <div className="relative w-full h-full max-w-7xl mx-auto flex items-center justify-center p-2 sm:p-6 pb-20 pt-16 z-10">
-        {activeTab === '3d-rev-machine' ? (
+      <div className="relative w-full h-full max-w-7xl mx-auto flex items-center justify-center p-2 sm:p-6 pb-24 pt-16 z-10">
+        {activeTab === '3d-car' ? (
+          /* ================= 3D INTERACTIVE CAR MODE ================= */
+          <div className="relative w-full h-full max-h-[82vh] flex items-center justify-center rounded-3xl overflow-hidden bg-black/60 border border-white/10 shadow-2xl backdrop-blur-md">
+            <CarViewer config={config} />
+          </div>
+        ) : activeTab === '3d-rev-machine' || activeTab === 'engine-3d' ? (
           /* ================= 3D REV MACHINE ENGINE MODE ================= */
-          <div className="relative w-full h-full max-h-[80vh] flex items-center justify-center rounded-3xl overflow-hidden bg-black/60 border border-amber-500/30 shadow-[0_0_50px_rgba(245,158,11,0.15)] backdrop-blur-md">
+          <div className="relative w-full h-full max-h-[82vh] flex items-center justify-center rounded-3xl overflow-hidden bg-black/60 border border-amber-500/30 shadow-[0_0_50px_rgba(245,158,11,0.15)] backdrop-blur-md">
             <EngineRevMachine3D modelType={config.modelType} valveMode={config.valveMode} />
           </div>
         ) : activeTab === 'photos' ? (

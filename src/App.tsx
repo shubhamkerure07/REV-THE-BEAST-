@@ -1,39 +1,50 @@
 import React, { useState, useEffect } from 'react';
-import { CarConfigState, CameraPreset, CarModelType, RealSpeedCalculation } from './types';
-import { VehicleViewer } from './components/VehicleViewer';
-import { Header } from './components/Header';
-import { ConfiguratorPanel } from './components/ConfiguratorPanel';
-import { VehicleGarageDrawer } from './components/VehicleGarageDrawer';
-import { EngineRevOverlay } from './components/EngineRevOverlay';
-import { DynoGraphHUD } from './components/DynoGraphHUD';
-import { VehicleDetailsBar } from './components/VehicleDetailsBar';
-import { EasyKeyboardGuide } from './components/EasyKeyboardGuide';
-import { SpecsModal } from './components/SpecsModal';
+import {
+  CarConfigState,
+  CarModelType,
+  ExhaustStyle,
+  ExhaustMaterial,
+  PaintFinish,
+} from './types';
+import { EditorialHeader, AppView } from './components/EditorialHeader';
+import { EditorialHero } from './components/EditorialHero';
+import { EditorialStoryScroll } from './components/EditorialStoryScroll';
+import { EditorialGarage } from './components/EditorialGarage';
+import { EditorialCarDetail } from './components/EditorialCarDetail';
+import { EditorialCustomizer } from './components/EditorialCustomizer';
+import { EditorialSoundLab } from './components/EditorialSoundLab';
+import { EditorialAiLab } from './components/EditorialAiLab';
+import { EditorialRacing } from './components/EditorialRacing';
+import { AudioMixerModal } from './components/AudioMixerModal';
 import { getVehicleMedia } from './data/vehicleMedia';
 import { getEngineForModel } from './data/engines';
-import { Eye, EyeOff } from 'lucide-react';
+import { engineSound } from './utils/audio';
 
 const INITIAL_CONFIG: CarConfigState = {
-  modelType: 'procedural-m4',
-  viewMode: 'photos',
-  paintColor: '#0a442e', // Isle of Man Green
-  paintName: 'Isle of Man Green',
-  paintFinish: 'metallic',
+  modelType: 'lambo-aventador',
+  viewMode: '3d-car',
+  paintColor: '#f77f21',
+  paintName: 'Arancio Atlas',
+  paintFinish: 'metallic' as PaintFinish,
   carbonFiberRoof: true,
   windowTint: 0.65,
   lightsOn: true,
   haloGlowColor: '#ffffff',
   wheels: {
-    rimColor: '#b0b5be',
+    rimColor: '#1f2937',
     rimStyle: 'double-spoke',
-    caliperColor: '#0066b1', // Motorsport Blue
+    caliperColor: '#ef4444',
     tireType: 'michelin-pilot',
   },
   aero: {
     carbonPackage: true,
-    spoilerStyle: 'lip',
+    spoilerStyle: 'gt-wing',
     frontSplitter: true,
     rearDiffuserFins: true,
+  },
+  exhaustConfig: {
+    style: 'quad' as ExhaustStyle,
+    material: 'titanium' as ExhaustMaterial,
   },
   openParts: {
     leftDoor: false,
@@ -41,7 +52,7 @@ const INITIAL_CONFIG: CarConfigState = {
     hood: false,
     trunk: false,
   },
-  environment: 'showroom',
+  environment: 'race-track',
   cameraPreset: 'hero',
   autoRotate: false,
   rotateSpeed: 1.2,
@@ -49,197 +60,304 @@ const INITIAL_CONFIG: CarConfigState = {
   driveSpeed: 1.0,
   exhaustSound: false,
   valveMode: 'sport',
-  engineProfile: 's58-inline6',
+  engineProfile: 'coyote-v8',
 };
 
 export default function App() {
+  const [currentView, setCurrentView] = useState<AppView>('home');
   const [config, setConfig] = useState<CarConfigState>(INITIAL_CONFIG);
-  const [isSpecsOpen, setIsSpecsOpen] = useState<boolean>(false);
-  const [isGarageOpen, setIsGarageOpen] = useState<boolean>(false);
+  const [isAudioActive, setIsAudioActive] = useState<boolean>(false);
+  const [isMixerOpen, setIsMixerOpen] = useState<boolean>(false);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
-
-  // Live Engine & Mechanical Telemetry State
-  const [liveRpm, setLiveRpm] = useState<number>(0);
-  const [liveMechanics, setLiveMechanics] = useState<RealSpeedCalculation | null>(null);
-
-  // Master Screen Visibility Mode: allows users to hide all HUD overlays for clean viewing
-  const [isCleanScreenMode, setIsCleanScreenMode] = useState<boolean>(false);
 
   const showToast = (msg: string) => {
     setToastMessage(msg);
     setTimeout(() => {
       setToastMessage(null);
-    }, 3500);
+    }, 3200);
   };
 
-  const handleSelectModelType = (modelType: CarModelType) => {
+  // Synchronize engine acoustic profile on vehicle change
+  const handleSelectCar = (modelType: CarModelType) => {
     const engine = getEngineForModel(modelType);
     setConfig((prev) => ({
       ...prev,
       modelType,
       engineProfile: engine.soundProfile,
-      cameraPreset: 'hero',
     }));
+    engineSound.setProfile(engine.soundProfile);
     const media = getVehicleMedia(modelType);
-    showToast(`Switched to ${media.name} (${media.keySpecs.engine})`);
+    showToast(`ACTIVE MACHINE: ${media.name.toUpperCase()}`);
   };
 
-  // Keyboard shortcut for toggling clean screen mode (H key)
+  // Audio Toggle
+  const handleToggleAudio = () => {
+    if (isAudioActive) {
+      engineSound.stop();
+      setIsAudioActive(false);
+      showToast('AUDIO SYSTEM: OFF');
+    } else {
+      engineSound.start();
+      engineSound.setThrottle(0.1);
+      setIsAudioActive(true);
+      showToast('AUDIO SYSTEM: ONLINE (ACOUSTIC ENGINE SYNTHESIS)');
+    }
+  };
+
+  // Quick blip rev from hero
+  const handleQuickRev = () => {
+    engineSound.start();
+    setIsAudioActive(true);
+    engineSound.triggerThrottleBlip();
+    showToast('THROTTLE REV // TRANSIENT BLIP');
+  };
+
+  // Scroll to Story in Home View
+  const handleScrollToStory = () => {
+    const target = document.getElementById('story-scroll-container');
+    if (target) {
+      target.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
+  // Global Keyboard Shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
       if (activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select') return;
 
-      if (e.key === 'h' || e.key === 'H') {
+      if (e.key === 'm' || e.key === 'M') {
         e.preventDefault();
-        setIsCleanScreenMode((prev) => {
-          const nextVal = !prev;
-          showToast(nextVal ? 'Clean Screen Mode: HUD hidden (Press H to restore)' : 'HUD Visible: All gauges active');
-          return nextVal;
-        });
+        setIsMixerOpen((prev) => !prev);
+      } else if (e.key === 'g' || e.key === 'G') {
+        if (currentView !== 'racing') {
+          e.preventDefault();
+          setCurrentView('garage');
+          showToast('VIEW: GARAGE');
+        }
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
-
-  const handleTakeScreenshot = () => {
-    const media = getVehicleMedia(config.modelType);
-    const photo = media.photos[config.cameraPreset || 'hero'] || media.photos.hero;
-
-    // Trigger instant download of the current high-res media photo
-    const link = document.createElement('a');
-    link.href = photo.url;
-    link.download = `${config.modelType}_${config.cameraPreset || 'hero'}.jpg`;
-    link.target = '_blank';
-    link.rel = 'noreferrer noopener';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    showToast(`Captured high-definition studio snapshot of ${media.name}!`);
-  };
-
-  const activeEngine = getEngineForModel(config.modelType);
+  }, [currentView]);
 
   return (
-    <div id="app-container" className="relative w-screen h-screen bg-neutral-950 overflow-hidden font-sans">
-      {/* High-Performance Photo, Video Reel & 3D Rev Machine Showcase */}
-      <VehicleViewer
-        config={config}
-        onChangeConfig={setConfig}
-        onOpenSpecs={() => setIsSpecsOpen(true)}
+    <div
+      id="app-root"
+      className="relative w-full min-h-screen bg-[#08080a] text-white overflow-x-hidden font-sans select-none"
+    >
+      {/* 1. Universal Editorial Navigation Header */}
+      <EditorialHeader
+        currentView={currentView}
+        onNavigate={(view) => {
+          setCurrentView(view);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        selectedCar={config.modelType}
+        isAudioActive={isAudioActive}
+        onToggleAudio={handleToggleAudio}
+        onOpenMixer={() => setIsMixerOpen(true)}
+      />
+
+      {/* 2. Primary Dynamic View Content */}
+      <main className="w-full min-h-screen">
+        {/* VIEW A: HOME EDITORIAL EXPERIENCE (Hero + Story Scroll) */}
+        {currentView === 'home' && (
+          <div className="w-full animate-fade-in">
+            <EditorialHero
+              selectedCar={config.modelType}
+              onEnterGarage={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onExploreCars={() => {
+                setCurrentView('car-detail');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onScrollToStory={handleScrollToStory}
+              onQuickRev={handleQuickRev}
+            />
+            <EditorialStoryScroll
+              selectedCar={config.modelType}
+              onOpenGarage={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenSoundLab={() => {
+                setCurrentView('sound-lab');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenAiLab={() => {
+                setCurrentView('ai-lab');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenRacing={() => {
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenCarDetail={() => {
+                setCurrentView('car-detail');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
+        )}
+
+        {/* VIEW B: EDITORIAL GARAGE */}
+        {currentView === 'garage' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialGarage
+              selectedCar={config.modelType}
+              onSelectCar={(model) => {
+                handleSelectCar(model);
+              }}
+              onViewStory={(model) => {
+                handleSelectCar(model);
+                setCurrentView('car-detail');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onCustomize={(model) => {
+                handleSelectCar(model);
+                setCurrentView('customizer');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onRace={(model) => {
+                handleSelectCar(model);
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenSoundLab={(model) => {
+                handleSelectCar(model);
+                setCurrentView('sound-lab');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
+        )}
+
+        {/* VIEW C: CAR DETAIL (9-Angle Photography Gallery & Monograph) */}
+        {currentView === 'car-detail' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialCarDetail
+              modelType={config.modelType}
+              onBack={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onCustomize={(model) => {
+                handleSelectCar(model);
+                setCurrentView('customizer');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onRace={(model) => {
+                handleSelectCar(model);
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onOpenSoundLab={(model) => {
+                handleSelectCar(model);
+                setCurrentView('sound-lab');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+            />
+          </div>
+        )}
+
+        {/* VIEW D: EDITORIAL CUSTOMIZER */}
+        {currentView === 'customizer' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialCustomizer
+              config={config}
+              onChangeConfig={setConfig}
+              onBack={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onRace={(model) => {
+                handleSelectCar(model);
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              showToast={showToast}
+            />
+          </div>
+        )}
+
+        {/* VIEW E: SIGNATURE SOUND LAB */}
+        {currentView === 'sound-lab' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialSoundLab
+              selectedCar={config.modelType}
+              onSelectCar={(model) => {
+                handleSelectCar(model);
+              }}
+              onBack={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              showToast={showToast}
+            />
+          </div>
+        )}
+
+        {/* VIEW F: BEAST AI LAB */}
+        {currentView === 'ai-lab' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialAiLab
+              onBack={() => {
+                setCurrentView('garage');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onDeployToGarage={(newCar) => {
+                handleSelectCar(newCar.modelType);
+                setConfig((prev) => ({
+                  ...prev,
+                  paintColor: newCar.paintColor,
+                  exhaustConfig: {
+                    style: newCar.exhaustStyle,
+                    material: newCar.exhaustMaterial,
+                  },
+                }));
+                setCurrentView('garage');
+                showToast(`DEPLOYED ${newCar.name.toUpperCase()} TO GARAGE`);
+              }}
+              onRace={(model) => {
+                handleSelectCar(model);
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              showToast={showToast}
+            />
+          </div>
+        )}
+
+        {/* VIEW G: CIRCUIT RACING SIMULATION */}
+        {currentView === 'racing' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialRacing
+              config={config}
+              onNavigate={(view) => {
+                setCurrentView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              showToast={showToast}
+            />
+          </div>
+        )}
+      </main>
+
+      {/* 3. Global Master Audio Mixer Modal */}
+      <AudioMixerModal
+        isOpen={isMixerOpen}
+        onClose={() => setIsMixerOpen(false)}
         showToast={showToast}
       />
 
-      {/* Top Header */}
-      <Header
-        config={config}
-        onChangeConfig={setConfig}
-        onOpenSpecs={() => setIsSpecsOpen(true)}
-        onTakeScreenshot={handleTakeScreenshot}
-        onSelectModelType={handleSelectModelType}
-      />
-
-      {/* Clean Screen Visibility Floating Toggle Button */}
-      <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-        <button
-          id="btn-toggle-clean-screen"
-          onClick={() => {
-            setIsCleanScreenMode(!isCleanScreenMode);
-            showToast(!isCleanScreenMode ? 'Clean Screen Mode: HUD hidden (Press H to restore)' : 'HUD Restored');
-          }}
-          className={`flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-wider border shadow-xl backdrop-blur-xl transition-all cursor-pointer ${
-            isCleanScreenMode
-              ? 'bg-amber-500/20 text-amber-300 border-amber-400/50 hover:bg-amber-500/30'
-              : 'bg-black/60 text-slate-300 hover:text-white border-white/15 hover:border-white/30'
-          }`}
-          title="Toggle Clean Screen Mode (Hide all HUD overlays for unobstructed car viewing, or press H)"
-        >
-          {isCleanScreenMode ? <Eye className="w-3.5 h-3.5 text-amber-400" /> : <EyeOff className="w-3.5 h-3.5 text-slate-400" />}
-          <span>{isCleanScreenMode ? 'RESTORE HUD (H)' : 'CLEAN SCREEN (H)'}</span>
-        </button>
-      </div>
-
-      {/* Dedicated Left-Side Vehicle Fleet Vault Drawer */}
-      <VehicleGarageDrawer
-        currentModel={config.modelType}
-        onSelectModel={(model) => {
-          handleSelectModelType(model);
-        }}
-        isOpen={isGarageOpen}
-        onToggle={() => setIsGarageOpen(!isGarageOpen)}
-      />
-
-      {/* Right-Side Configurator Studio Drawer (Paint, Engine, Wheels, Studio) */}
-      <ConfiguratorPanel
-        config={config}
-        onChangeConfig={setConfig}
-        onSelectModelType={handleSelectModelType}
-      />
-
-      {/* ========================================================================= */}
-      {/* FLOATING, COLLAPSIBLE HUD COMPONENTS (Hidden when Clean Screen is active) */}
-      {/* ========================================================================= */}
-      {!isCleanScreenMode && (
-        <>
-          {/* Top-Left: Vehicle Technical Details & Specs Bar */}
-          <VehicleDetailsBar
-            modelType={config.modelType}
-            onOpenSpecsModal={() => setIsSpecsOpen(true)}
-            gForce={liveMechanics?.gForceLongitudinal || 0}
-            dragNewtons={liveMechanics?.dragForceNewtons || 0}
-          />
-
-          {/* Top-Right: Relocated Dyno Power & Torque Graph HUD */}
-          <DynoGraphHUD
-            engine={activeEngine}
-            currentRpm={liveRpm}
-            isSoundActive={config.exhaustSound}
-            onToggleSound={() =>
-              setConfig((prev) => ({ ...prev, exhaustSound: !prev.exhaustSound }))
-            }
-          />
-
-          {/* Bottom-Left: Refactored Collapsible Digital Cockpit & Engine State Hub */}
-          <EngineRevOverlay
-            isSoundActive={config.exhaustSound}
-            isDriving={config.isDriving}
-            modelType={config.modelType}
-            engineProfile={config.engineProfile}
-            valveMode={config.valveMode}
-            onToggleSound={() =>
-              setConfig((prev) => ({ ...prev, exhaustSound: !prev.exhaustSound }))
-            }
-            onSelectEngineProfile={(profile) =>
-              setConfig((prev) => ({ ...prev, engineProfile: profile }))
-            }
-            onSelectValveMode={(mode) =>
-              setConfig((prev) => ({ ...prev, valveMode: mode }))
-            }
-            onRpmChange={(rpm) => setLiveRpm(rpm)}
-            onMechanicsChange={(mech) => setLiveMechanics(mech)}
-          />
-
-          {/* Bottom-Right: Collapsible Easy Keyboard Shortcuts Guide */}
-          <EasyKeyboardGuide />
-        </>
-      )}
-
-      {/* Technical Specs Modal */}
-      <SpecsModal
-        isOpen={isSpecsOpen}
-        onClose={() => setIsSpecsOpen(false)}
-        modelType={config.modelType}
-      />
-
-      {/* Notifications Toast */}
+      {/* 4. Global High-Contrast Sleek Toast Notification */}
       {toastMessage && (
-        <div
-          id="toast-notification"
-          className="absolute bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-2.5 rounded-full bg-black/90 text-white border border-white/20 backdrop-blur-xl shadow-2xl text-xs font-semibold flex items-center gap-2 animate-bounce"
-        >
-          <span className="w-2 h-2 rounded-full bg-blue-500" />
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-neutral-900/95 border border-white/20 text-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 backdrop-blur-md animate-fade-in text-xs font-mono uppercase tracking-wider">
+          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
           <span>{toastMessage}</span>
         </div>
       )}
