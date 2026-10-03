@@ -3,6 +3,7 @@
 # 🏎️ REV // THE BEAST
 ### *The High-Performance Automotive Editorial & Acoustic Synthesis Experience*
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Vercel_Preview-black?style=for-the-badge&logo=vercel&logoColor=white)](https://temporary-brisk-coral-7qlocsr.vercel.app)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fshubhamkerure07%2FREV-THE-BEAST-)
 [![React 18](https://img.shields.io/badge/React-18.3-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
@@ -19,7 +20,7 @@
 
 <br/>
 
-[🚀 Deploy Live on Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fshubhamkerure07%2FREV-THE-BEAST-) • [📖 Architecture](#-architecture--user-journey) • [🔊 Acoustic Engine](#-physical-modeling-acoustic-synthesis) • [🏁 Grand Prix Racing](#-grand-prix-circuit-racing-simulator) • [📱 Mobile Compatibility](#-mobile--phone-optimization)
+[🌐 Live Deployment](https://temporary-brisk-coral-7qlocsr.vercel.app) • [🚀 Deploy on Vercel](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fshubhamkerure07%2FREV-THE-BEAST-) • [📖 Architecture](#-architecture--user-journey) • [🔊 Acoustic Engine](#-physical-modeling-acoustic-synthesis) • [🏁 Grand Prix Racing](#-grand-prix-circuit-racing-simulator) • [📱 Mobile Compatibility](#-mobile--phone-optimization)
 
 ---
 
