@@ -40,6 +40,9 @@ interface CircuitSpec {
   name: string;
   location: string;
   lengthKm: number;
+  corners: number;
+  elevationChange: string;
+  trackType: string;
   totalLaps: number;
   recordLap: string;
   skyColor: number;
@@ -58,6 +61,9 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     name: 'Nürburgring GP Circuit',
     location: 'Eifel Forest, Germany',
     lengthKm: 3.6,
+    corners: 16,
+    elevationChange: '+24m / -18m',
+    trackType: 'FIA Grade 1 European Grand Prix Circuit',
     totalLaps: 2,
     recordLap: '01:28.450',
     skyColor: 0x181824,
@@ -67,13 +73,16 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     curbColor: 0xdc2626,
     barrierColor: 0x475569,
     isDragStrip: false,
-    description: 'FIA Grade 1 European Grand Prix circuit featuring high-camber sweepers and heavy braking chicanes.',
+    description: 'FIA Grade 1 European Grand Prix circuit featuring high-camber sweepers, downhill chicanes, and FIA regulation kerbing.',
   },
   'tokyo-c1': {
     id: 'tokyo-c1',
     name: 'Tokyo C1 Shuto Expressway',
     location: 'Shuto Expressway, Tokyo, Japan',
     lengthKm: 4.2,
+    corners: 11,
+    elevationChange: '+8m / -8m',
+    trackType: 'Midnight Metropolitan Elevated Ring Road',
     totalLaps: 2,
     recordLap: '01:34.120',
     skyColor: 0x050508,
@@ -83,13 +92,16 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     curbColor: 0x00f0ff,
     barrierColor: 0x334155,
     isDragStrip: false,
-    description: 'Elevated urban expressway carved through midnight skyscraper canyons with reflective neon tarmac.',
+    description: 'Elevated urban expressway carved through midnight skyscraper canyons with reflective neon tarmac and high-speed tunnel transitions.',
   },
   'big-sur': {
     id: 'big-sur',
     name: 'Big Sur Mountain Pass',
     location: 'Highway 1, California, USA',
     lengthKm: 4.8,
+    corners: 22,
+    elevationChange: '+48m / -36m',
+    trackType: 'Pacific Coast Mountain Scenic Pass',
     totalLaps: 1,
     recordLap: '02:04.880',
     skyColor: 0x24141c,
@@ -99,13 +111,16 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     curbColor: 0xf59e0b,
     barrierColor: 0x78716c,
     isDragStrip: false,
-    description: 'Breathtaking coastal cliffs and mountain switchbacks alongside Pacific ocean vistas.',
+    description: 'Breathtaking coastal cliffs and mountain switchbacks alongside Pacific ocean vistas with technical elevation dives.',
   },
   'drag-strip': {
     id: 'drag-strip',
-    name: 'Quarter-Mile Dragway (Santa Ana)',
+    name: 'Santa Ana Quarter-Mile Dragway',
     location: 'Santa Ana Raceway, California, USA',
     lengthKm: 0.402,
+    corners: 0,
+    elevationChange: '0m Flat',
+    trackType: 'NHRA Championship Prepped Dragway',
     totalLaps: 1,
     recordLap: '00:08.920',
     skyColor: 0x140c10,
@@ -115,11 +130,11 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     curbColor: 0xe11d48,
     barrierColor: 0x475569,
     isDragStrip: true,
-    description: 'Championship NHRA-spec VHT prepped dragstrip with staging Christmas tree and timing beams.',
+    description: 'Championship NHRA-spec VHT prepped dragstrip with staging Christmas tree, launch traction glue, and high-speed 402m timing trap.',
   },
 };
 
-type CameraMode = 'chase' | 'hood' | 'cockpit';
+type CameraMode = 'chase' | 'hood' | 'cockpit' | 'cinematic';
 type SimState = 'staging' | 'countdown' | 'racing' | 'finished';
 
 interface AiOpponent {
@@ -862,8 +877,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
           playerGroup.position.z + Math.cos(playerHeadingRef.current) * 20
         );
         camera.lookAt(lookTarget);
-      } else {
-        // Cockpit Camera
+      } else if (activeCamMode === 'cockpit') {
         camera.position.set(
           playerGroup.position.x - Math.sin(playerHeadingRef.current) * 0.1,
           playerGroup.position.y + 1.05,
@@ -875,6 +889,17 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
           playerGroup.position.z + Math.cos(playerHeadingRef.current) * 30
         );
         camera.lookAt(lookTarget);
+      } else {
+        // Cinematic Flythrough / Crane Tour Camera
+        const orbitAngle = now * 0.00035;
+        const orbitRadius = 14;
+        const camX = playerGroup.position.x + Math.sin(orbitAngle) * orbitRadius;
+        const camZ = playerGroup.position.z + Math.cos(orbitAngle) * orbitRadius;
+        const camY = playerGroup.position.y + 4.6 + Math.sin(orbitAngle * 0.8) * 1.8;
+        camera.position.lerp(new THREE.Vector3(camX, camY, camZ), 0.08);
+        camera.lookAt(playerGroup.position.x, playerGroup.position.y + 0.9, playerGroup.position.z);
+        camera.fov = 58;
+        camera.updateProjectionMatrix();
       }
 
       renderer.render(scene, camera);
@@ -889,7 +914,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current[e.code] = true;
       if (e.code === 'KeyC') {
-        const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : 'chase';
+        const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : cameraModeRef.current === 'cockpit' ? 'cinematic' : 'chase';
         updateCameraMode(next);
       } else if (e.code === 'Enter' || e.code === 'Space') {
         if (simStateRef.current === 'staging') {
@@ -1059,7 +1084,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                     key={q}
                     onClick={() => setGraphicsTier(q)}
                     className={`px-3 py-1 rounded-full uppercase font-bold cursor-pointer transition-all ${
-                      graphicsTier === q ? 'bg-amber-400 text-black' : 'text-neutral-400'
+                      graphicsTier === q ? 'bg-red-600 text-white' : 'text-neutral-400'
                     }`}
                   >
                     {q}
@@ -1070,13 +1095,13 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
           </div>
 
           {/* Center Stage: Circuit & Game Mode Selection */}
-          <div className="max-w-5xl mx-auto w-full my-auto py-6 space-y-6">
+          <div className="max-w-6xl mx-auto w-full my-auto py-6 space-y-6">
             <div>
-              <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-1">
-                RACING SIMULATOR 3D // MOTORSPORT PLATFORM
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-1">
+                RACING CIRCUITS // MOTORSPORT PLATFORM & CINEMATIC SHOWCASE
               </span>
               <h1 className="font-syne font-black text-3xl sm:text-5xl text-white tracking-tighter uppercase leading-[0.95]">
-                SELECT CIRCUIT & DISCIPLINE.
+                SELECT CIRCUIT & MOTORSPORT DISCIPLINE.
               </h1>
             </div>
 
@@ -1097,7 +1122,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                   }}
                   className={`px-5 py-2.5 rounded-full text-xs font-mono font-bold tracking-wider uppercase transition-all cursor-pointer ${
                     gameMode === m.id
-                      ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-950/40'
                       : 'bg-white/5 border border-white/10 text-neutral-400 hover:text-white'
                   }`}
                 >
@@ -1106,7 +1131,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
               ))}
             </div>
 
-            {/* Circuit Cards */}
+            {/* Circuit Cards with Verified Specs */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {(Object.keys(CIRCUITS) as TrackCircuitId[]).map((id) => {
                 const c = CIRCUITS[id];
@@ -1117,28 +1142,31 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                     onClick={() => setCircuitId(id)}
                     className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-amber-400/10 border-amber-400/80 shadow-xl ring-1 ring-amber-400/30'
+                        ? 'bg-red-500/10 border-red-500/80 shadow-xl ring-1 ring-red-500/30'
                         : 'bg-white/[0.02] border-white/10 hover:border-white/20'
                     }`}
                   >
                     <div>
                       <div className="flex items-center justify-between mb-2">
-                        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
-                          {c.lengthKm} KM
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-red-400 font-bold">
+                          {c.lengthKm} KM • {c.corners} TURNS
                         </span>
                         {isSelected && (
-                          <span className="w-2 h-2 rounded-full bg-amber-400" />
+                          <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                         )}
                       </div>
                       <h4 className="font-syne font-bold text-base text-white">{c.name}</h4>
-                      <p className="text-[11px] text-neutral-400 font-sans mt-1 line-clamp-2">
+                      <span className="text-[10px] font-mono text-neutral-400 block mt-0.5">
+                        {c.trackType}
+                      </span>
+                      <p className="text-[11px] text-neutral-400 font-sans mt-2 line-clamp-2">
                         {c.description}
                       </p>
                     </div>
 
-                    <div className="pt-4 border-t border-white/[0.06] mt-4 flex items-center justify-between font-mono text-[10px]">
-                      <span className="text-neutral-500 uppercase">RECORD</span>
-                      <span className="text-amber-400 font-bold">{c.recordLap}</span>
+                    <div className="pt-3 border-t border-white/[0.06] mt-4 flex items-center justify-between font-mono text-[10px]">
+                      <span className="text-neutral-500 uppercase">ELEV: {c.elevationChange}</span>
+                      <span className="text-red-400 font-bold">{c.recordLap}</span>
                     </div>
                   </div>
                 );
@@ -1146,22 +1174,35 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             </div>
           </div>
 
-          {/* Bottom Bar: Action Trigger */}
+          {/* Bottom Bar: Dual Action Triggers */}
           <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
+              <span className="w-2.5 h-2.5 rounded-full bg-red-500 animate-ping" />
               <span className="text-xs font-mono text-neutral-300">
                 ACTIVE VEHICLE: <span className="text-white font-bold">{media.name}</span> ({engine.powerHp} HP)
               </span>
             </div>
 
-            <button
-              onClick={handleStartRace}
-              className="w-full sm:w-auto px-10 py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-syne font-black text-sm uppercase tracking-wider transition-all shadow-2xl flex items-center justify-center gap-3 cursor-pointer hover:scale-105"
-            >
-              <Play className="w-4 h-4 fill-black" />
-              <span>COMMENCE SIMULATION (PRESS ENTER)</span>
-            </button>
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <button
+                onClick={() => {
+                  updateCameraMode('cinematic');
+                  handleStartRace();
+                }}
+                className="flex-1 sm:flex-none px-6 py-4 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/20 font-mono text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <Camera className="w-4 h-4 text-red-400" />
+                <span>EXPLORE TRACK (CINEMATIC CAM)</span>
+              </button>
+
+              <button
+                onClick={handleStartRace}
+                className="flex-1 sm:flex-none px-8 py-4 rounded-full bg-red-600 hover:bg-red-500 text-white font-syne font-black text-sm uppercase tracking-wider transition-all shadow-2xl shadow-red-950/50 flex items-center justify-center gap-3 cursor-pointer hover:scale-105"
+              >
+                <Play className="w-4 h-4 fill-white" />
+                <span>START RACING (ENTER)</span>
+              </button>
+            </div>
           </div>
         </div>
       )}
@@ -1174,7 +1215,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
           <span className="text-xs font-mono uppercase tracking-[0.3em] text-neutral-400 mb-4">
             START SEQUENCE
           </span>
-          <div className="text-9xl sm:text-[12rem] font-syne font-black text-amber-400 animate-bounce leading-none drop-shadow-[0_0_50px_rgba(251,191,36,0.8)]">
+          <div className="text-9xl sm:text-[12rem] font-syne font-black text-red-500 animate-bounce leading-none drop-shadow-[0_0_50px_rgba(239,68,68,0.8)]">
             {countdownNum === 0 ? 'GO!' : countdownNum}
           </div>
         </div>
@@ -1191,7 +1232,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             <div className="flex items-center gap-3">
               <div className="px-5 py-3 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 flex flex-col">
                 <span className="text-[9px] font-mono uppercase tracking-widest text-neutral-400">POSITION</span>
-                <span className="text-3xl font-syne font-black text-amber-400 leading-none mt-0.5">
+                <span className="text-3xl font-syne font-black text-red-500 leading-none mt-0.5">
                   P{racePosition}<span className="text-xs text-neutral-400 font-mono">/4</span>
                 </span>
               </div>
@@ -1229,7 +1270,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
           {/* Center Drifting Indicator */}
           {isDrifting && (
-            <div className="self-center px-6 py-2 rounded-full bg-amber-400 text-black font-syne font-black text-sm tracking-widest uppercase animate-pulse shadow-xl shadow-amber-400/40">
+            <div className="self-center px-6 py-2 rounded-full bg-red-600 text-white font-syne font-black text-sm tracking-widest uppercase animate-pulse shadow-xl shadow-red-950/60">
               DRIFT ANGLE ACTIVE // TIRE SCRUB
             </div>
           )}
@@ -1252,7 +1293,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                 <div className="mt-3 w-48 sm:w-60 h-2.5 rounded-full bg-neutral-800 overflow-hidden">
                   <div
                     className={`h-full transition-all duration-75 rounded-full ${
-                      rpm > (engine.redlineRpm || 8000) * 0.9 ? 'bg-red-500 animate-pulse' : 'bg-amber-400'
+                      rpm > (engine.redlineRpm || 8000) * 0.9 ? 'bg-red-500 animate-pulse' : 'bg-red-600'
                     }`}
                     style={{
                       width: `${Math.min(100, (rpm / (engine.redlineRpm || 8000)) * 100)}%`,
@@ -1262,14 +1303,14 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
                 <div className="flex justify-between text-[10px] font-mono text-neutral-400 mt-1.5">
                   <span>{rpm} RPM</span>
-                  <span className="text-amber-400 font-bold">{boostPsi} PSI BOOST</span>
+                  <span className="text-red-400 font-bold">{boostPsi} PSI BOOST</span>
                 </div>
               </div>
 
               {/* Gear Indicator */}
               <div className="w-20 h-20 rounded-3xl bg-black/80 backdrop-blur-md border border-white/10 flex flex-col items-center justify-center">
                 <span className="text-[9px] font-mono text-neutral-400 uppercase">GEAR</span>
-                <span className="text-3xl font-syne font-black text-amber-400 leading-none mt-0.5">
+                <span className="text-3xl font-syne font-black text-red-500 leading-none mt-0.5">
                   {currentGear}
                 </span>
               </div>
@@ -1279,12 +1320,12 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             <div className="pointer-events-auto flex items-center gap-2">
               <button
                 onClick={() => {
-                  const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : 'chase';
+                  const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : cameraModeRef.current === 'cockpit' ? 'cinematic' : 'chase';
                   updateCameraMode(next);
                 }}
                 className="px-4 py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/10 font-mono text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
               >
-                <Camera className="w-4 h-4 text-amber-400" />
+                <Camera className="w-4 h-4 text-red-400" />
                 <span>CAM: {cameraMode.toUpperCase()}</span>
               </button>
 
@@ -1310,14 +1351,14 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             <button
               onTouchStart={() => (mobileInputRef.current.steerLeft = true)}
               onTouchEnd={() => (mobileInputRef.current.steerLeft = false)}
-              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-amber-400 active:text-black flex items-center justify-center font-bold text-lg select-none"
+              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-red-600 active:text-white flex items-center justify-center font-bold text-lg select-none"
             >
               ◄
             </button>
             <button
               onTouchStart={() => (mobileInputRef.current.steerRight = true)}
               onTouchEnd={() => (mobileInputRef.current.steerRight = false)}
-              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-amber-400 active:text-black flex items-center justify-center font-bold text-lg select-none"
+              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-red-600 active:text-white flex items-center justify-center font-bold text-lg select-none"
             >
               ►
             </button>
@@ -1344,7 +1385,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             <button
               onTouchStart={() => (mobileInputRef.current.throttle = true)}
               onTouchEnd={() => (mobileInputRef.current.throttle = false)}
-              className="w-16 h-20 rounded-2xl bg-amber-400/20 border border-amber-400/60 text-xs font-mono font-black uppercase active:bg-amber-400 text-amber-300 active:text-black flex items-center justify-center select-none"
+              className="w-16 h-20 rounded-2xl bg-red-500/20 border border-red-500/60 text-xs font-mono font-black uppercase active:bg-red-600 text-red-300 active:text-white flex items-center justify-center select-none"
             >
               GAS
             </button>
@@ -1358,7 +1399,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       {simState === 'finished' && finalResults && (
         <div className="absolute inset-0 z-50 bg-[#08080a]/95 backdrop-blur-2xl flex flex-col justify-center items-center p-6 sm:p-12 animate-fadeIn">
           <div className="max-w-xl w-full p-8 sm:p-10 rounded-3xl bg-neutral-900 border border-white/10 shadow-2xl text-center space-y-6">
-            <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 mx-auto">
+            <div className="w-14 h-14 rounded-2xl bg-red-500/20 border border-red-500/40 flex items-center justify-center text-red-400 mx-auto">
               <Trophy className="w-7 h-7" />
             </div>
 
@@ -1388,7 +1429,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                 <span className="text-[10px] text-neutral-500 uppercase block">
                   {currentCircuit.isDragStrip ? '0-100 SPRINT' : 'BEST LAP'}
                 </span>
-                <span className="text-lg font-bold text-amber-400">{finalResults.bestLapStr}</span>
+                <span className="text-lg font-bold text-red-500">{finalResults.bestLapStr}</span>
               </div>
               <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
                 <span className="text-[10px] text-neutral-500 uppercase block">
@@ -1411,7 +1452,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
               </button>
               <button
                 onClick={onExit}
-                className="flex-1 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-syne font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg"
+                className="flex-1 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white font-syne font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-red-950/40"
               >
                 RETURN TO GARAGE
               </button>

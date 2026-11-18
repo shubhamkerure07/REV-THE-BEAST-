@@ -170,7 +170,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-8 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-neutral-400 font-bold">
                 THE ULTIMATE CAR COLLECTION // VERIFIED SPECIFICATIONS
               </span>
@@ -190,7 +190,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                 placeholder="Search car, brand, engine..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:border-amber-400/50 transition-all"
+                className="w-full pl-10 pr-4 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono text-white placeholder-neutral-500 focus:outline-none focus:border-red-500/50 transition-all"
               />
             </div>
 
@@ -200,7 +200,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                 value={sortBy}
                 onChange={(e) => setSortBy(e.target.value as SortOption)}
                 aria-label="Sort car catalog"
-                className="w-full sm:w-auto appearance-none pl-4 pr-8 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white uppercase tracking-wider focus:outline-none focus:border-amber-400/50 cursor-pointer"
+                className="w-full sm:w-auto appearance-none pl-4 pr-8 py-2.5 rounded-full bg-white/[0.04] border border-white/10 text-xs font-mono font-bold text-white uppercase tracking-wider focus:outline-none focus:border-red-500/50 cursor-pointer"
               >
                 <option value="default" className="bg-neutral-900 text-white">Sort: Default</option>
                 <option value="power-desc" className="bg-neutral-900 text-white">Highest Power (HP)</option>
@@ -252,7 +252,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                   onClick={() => onSelectCar(key)}
                   className={`group rounded-3xl overflow-hidden bg-neutral-900/60 border transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1.5 shadow-xl ${
                     isSelected
-                      ? 'border-amber-400/80 ring-1 ring-amber-400/30'
+                      ? 'border-red-500/80 ring-1 ring-red-500/30'
                       : 'border-white/[0.08] hover:border-white/20'
                   }`}
                 >
@@ -281,7 +281,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                         onClick={(e) => handleAuditionSound(e, key)}
                         className={`p-2.5 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
                           isAuditioning
-                            ? 'bg-amber-400 text-black border-amber-400 animate-pulse'
+                            ? 'bg-red-600 text-white border-red-500 animate-pulse'
                             : 'bg-black/60 text-white border-white/20 hover:bg-white/20'
                         }`}
                         title="Audition exhaust note"
@@ -292,7 +292,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
 
                     {/* Active Selection Indicator */}
                     {isSelected && (
-                      <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1 rounded-full bg-amber-400 text-black text-[10px] font-mono font-bold uppercase tracking-wider shadow-lg">
+                      <div className="absolute bottom-4 left-4 flex items-center gap-2 px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-mono font-bold uppercase tracking-wider shadow-lg shadow-red-950/40">
                         <Check className="w-3.5 h-3.5" />
                         <span>ACTIVE IN GARAGE</span>
                       </div>
@@ -306,7 +306,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                         <span>{car.brand}</span>
                         <span>{car.category}</span>
                       </div>
-                      <h3 className="font-syne font-bold text-xl text-white group-hover:text-amber-400 transition-colors">
+                      <h3 className="font-syne font-bold text-xl text-white group-hover:text-red-500 transition-colors">
                         {car.name}
                       </h3>
                       <p className="text-xs text-neutral-400 font-sans line-clamp-1 mt-1">
@@ -318,7 +318,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                     <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/[0.06] font-mono text-center">
                       <div>
                         <span className="text-[9px] text-neutral-500 uppercase block">POWER</span>
-                        <span className="text-xs font-bold text-amber-400">{engine.powerHp} HP</span>
+                        <span className="text-xs font-bold text-red-500">{engine.powerHp} HP</span>
                       </div>
                       <div>
                         <span className="text-[9px] text-neutral-500 uppercase block">0-100 KM/H</span>
@@ -357,7 +357,7 @@ export const EditorialCars: React.FC<EditorialCarsProps> = ({
                           e.stopPropagation();
                           onRace(key);
                         }}
-                        className="px-3.5 py-2 rounded-xl bg-amber-400 hover:bg-amber-300 text-black font-mono text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center cursor-pointer shadow-md"
+                        className="px-3.5 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white font-mono text-[11px] font-black uppercase tracking-wider transition-all flex items-center justify-center cursor-pointer shadow-md shadow-red-950/40"
                         title="Race this vehicle"
                       >
                         <Flag className="w-3.5 h-3.5" />

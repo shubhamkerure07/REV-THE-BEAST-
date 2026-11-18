@@ -40,35 +40,35 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
 
   const navItems: { id: AppView; label: string; icon: React.ReactNode }[] = [
     { id: 'home', label: 'HOME', icon: <Compass className="w-3.5 h-3.5" /> },
-    { id: 'cars', label: 'CARS', icon: <Car className="w-3.5 h-3.5" /> },
-    { id: 'racing', label: 'RACING', icon: <Flag className="w-3.5 h-3.5" /> },
-    { id: 'garage', label: 'GARAGE', icon: <Activity className="w-3.5 h-3.5" /> },
-    { id: 'customizer', label: 'CUSTOMIZATION', icon: <Sliders className="w-3.5 h-3.5" /> },
+    { id: 'garage', label: 'SHOWROOM', icon: <Activity className="w-3.5 h-3.5" /> },
+    { id: 'racing', label: 'CIRCUITS', icon: <Flag className="w-3.5 h-3.5" /> },
+    { id: 'cars', label: 'COLLECTION', icon: <Car className="w-3.5 h-3.5" /> },
+    { id: 'sound-lab', label: 'EXPERIENCE', icon: <Volume2 className="w-3.5 h-3.5" /> },
     { id: 'about', label: 'ABOUT', icon: <Sparkles className="w-3.5 h-3.5" /> },
   ];
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 z-50 h-20 px-6 md:px-12 flex items-center justify-between bg-gradient-to-b from-[#08080a]/90 via-[#08080a]/60 to-transparent backdrop-blur-md border-b border-white/[0.06] transition-all">
+      <header className="fixed top-0 left-0 right-0 z-50 h-20 px-6 md:px-12 flex items-center justify-between bg-gradient-to-b from-[#08080a]/95 via-[#08080a]/70 to-transparent backdrop-blur-md border-b border-white/[0.06] transition-all">
         {/* Brand Emblem */}
         <button
           onClick={() => onNavigate('home')}
           className="flex items-center gap-3 group text-left cursor-pointer focus:outline-none"
         >
-          <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/15 flex items-center justify-center text-amber-400 group-hover:border-amber-400/50 group-hover:bg-amber-400/10 transition-all">
-            <Flame className="w-4 h-4 fill-amber-400 text-amber-400" />
+          <div className="w-8 h-8 rounded-lg bg-white/[0.06] border border-white/15 flex items-center justify-center text-red-500 group-hover:border-red-500/50 group-hover:bg-red-500/10 transition-all">
+            <Flame className="w-4 h-4 fill-red-500 text-red-500" />
           </div>
           <div className="flex flex-col">
             <div className="flex items-center gap-2">
               <span className="font-syne font-black text-lg md:text-xl tracking-tighter text-white uppercase">
-                REV <span className="text-amber-400 font-normal">//</span> THE BEAST
+                REV <span className="text-red-500 font-normal">//</span> THE BEAST
               </span>
-              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-widest uppercase bg-amber-400/10 text-amber-300 border border-amber-400/30">
-                2.0
+              <span className="hidden sm:inline-block px-1.5 py-0.5 rounded text-[9px] font-mono font-bold tracking-widest uppercase bg-red-500/10 text-red-400 border border-red-500/30">
+                ULTIMATE
               </span>
             </div>
             <span className="text-[9px] font-mono text-neutral-400 tracking-[0.2em] uppercase hidden md:block">
-              Editorial Automotive Experience
+              High-Performance Motoring Experience
             </span>
           </div>
         </button>
@@ -83,7 +83,7 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
                 onClick={() => onNavigate(item.id)}
                 className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-xs font-mono tracking-widest uppercase font-bold transition-all cursor-pointer ${
                   isActive
-                    ? 'bg-white text-black shadow-lg shadow-white/10'
+                    ? 'bg-red-600 text-white shadow-lg shadow-red-900/30'
                     : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
                 }`}
               >
@@ -118,13 +118,13 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
             onClick={onToggleAudio}
             className={`p-2 rounded-full border transition-all cursor-pointer ${
               isAudioActive
-                ? 'bg-amber-400/20 border-amber-400/40 text-amber-300 shadow-[0_0_15px_rgba(245,158,11,0.25)]'
+                ? 'bg-red-500/20 border-red-500/50 text-red-300 shadow-[0_0_15px_rgba(239,68,68,0.25)]'
                 : 'bg-white/[0.04] border-white/10 text-neutral-400 hover:text-white'
             }`}
             title={isAudioActive ? 'Mute engine audio' : 'Start physical engine sound'}
           >
             {isAudioActive ? (
-              <AnimatedAudioBarsIcon className="w-4 h-4 text-amber-400" />
+              <AnimatedAudioBarsIcon className="w-4 h-4 text-red-500" />
             ) : (
               <VolumeX className="w-4 h-4" />
             )}
@@ -156,9 +156,9 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
           {/* Mobile Header Top */}
           <div className="flex items-center justify-between border-b border-white/10 pb-6">
             <div className="flex items-center gap-2">
-              <Flame className="w-5 h-5 text-amber-400 fill-amber-400" />
+              <Flame className="w-5 h-5 text-red-500 fill-red-500" />
               <span className="font-syne font-black text-xl tracking-tighter text-white uppercase">
-                REV // THE BEAST
+                REV <span className="text-red-500">//</span> THE BEAST
               </span>
             </div>
             <button
@@ -189,7 +189,7 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
                     <span
                       className={`font-syne font-black text-3xl sm:text-4xl tracking-tight uppercase transition-all ${
                         isActive
-                          ? 'text-amber-400 pl-2'
+                          ? 'text-red-500 pl-2'
                           : 'text-neutral-300 group-hover:text-white'
                       }`}
                     >
@@ -215,7 +215,7 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
                 onNavigate('car-detail');
                 setMobileMenuOpen(false);
               }}
-              className="px-4 py-2 rounded-full bg-amber-400 text-black font-mono text-xs font-black uppercase tracking-wider"
+              className="px-4 py-2 rounded-full bg-red-600 text-white font-mono text-xs font-black uppercase tracking-wider shadow-lg shadow-red-950/40"
             >
               View Story
             </button>

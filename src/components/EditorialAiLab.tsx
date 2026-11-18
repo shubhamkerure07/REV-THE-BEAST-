@@ -308,7 +308,7 @@ export const EditorialAiLab: React.FC<EditorialAiLabProps> = ({
                     <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/[0.08] text-center font-mono">
                       <div className="bg-black/40 p-2.5 rounded-xl border border-white/[0.04]">
                         <span className="text-[9px] text-neutral-400 block uppercase">OUTPUT</span>
-                        <span className="text-base font-black text-amber-400">
+                        <span className="text-base font-black text-red-500">
                           {synthesizedCar.powerHp} HP
                         </span>
                       </div>
@@ -340,13 +340,13 @@ export const EditorialAiLab: React.FC<EditorialAiLabProps> = ({
                         onClick={handleAuditionSynthesizedSound}
                         className="px-5 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2"
                       >
-                        <Volume2 className="w-4 h-4 text-amber-400" />
+                        <Volume2 className="w-4 h-4 text-red-400" />
                         <span>AUDITION SOUND</span>
                       </button>
 
                       <button
                         onClick={() => onRace('beast-v12-ai')}
-                        className="px-6 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center gap-2 font-black"
+                        className="px-6 py-3 rounded-full bg-red-600 hover:bg-red-500 text-white uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-red-950/40 flex items-center gap-2 font-black"
                       >
                         <Flag className="w-4 h-4" />
                         <span>RACE</span>
@@ -399,7 +399,7 @@ export const EditorialAiLab: React.FC<EditorialAiLabProps> = ({
 
             {/* Recommended Blueprint */}
             <div className="p-6 rounded-2xl bg-black/40 border border-white/10 space-y-4">
-              <span className="text-[10px] font-mono text-amber-400 uppercase tracking-widest font-bold block">
+              <span className="text-[10px] font-mono text-red-500 uppercase tracking-widest font-bold block">
                 WHY THIS BUILD? // RECOMMENDED BLUEPRINT
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4 font-mono text-xs">
@@ -412,7 +412,7 @@ export const EditorialAiLab: React.FC<EditorialAiLabProps> = ({
 
                 <div className="p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
                   <span className="text-[9px] text-neutral-500 uppercase block">EXHAUST SPEC</span>
-                  <strong className="text-amber-400 text-sm">
+                  <strong className="text-red-500 text-sm">
                     {advisorGoal === 'nurburgring' ? 'Titanium Equal-Length Race' : 'Straight-Pipe Decat'}
                   </strong>
                 </div>

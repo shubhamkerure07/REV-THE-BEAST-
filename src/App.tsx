@@ -401,7 +401,7 @@ export default function App() {
       {/* 4. Global High-Contrast Sleek Toast Notification */}
       {toastMessage && (
         <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-6 py-3 bg-neutral-900/95 border border-white/20 text-white rounded-full shadow-[0_10px_40px_rgba(0,0,0,0.8)] flex items-center gap-3 backdrop-blur-md animate-fade-in text-xs font-mono uppercase tracking-wider">
-          <span className="w-2 h-2 rounded-full bg-amber-400 animate-ping" />
+          <span className="w-2 h-2 rounded-full bg-red-500 animate-ping" />
           <span>{toastMessage}</span>
         </div>
       )}

@@ -98,7 +98,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
 
           <button
             onClick={() => onRace(modelType)}
-            className="px-5 py-2 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs uppercase font-black tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg"
+            className="px-5 py-2 rounded-full bg-red-600 hover:bg-red-500 text-white font-mono text-xs uppercase font-black tracking-wider transition-all cursor-pointer flex items-center gap-2 shadow-lg shadow-red-950/40"
           >
             <Flag className="w-3.5 h-3.5" />
             <span>RACE THIS CAR</span>
@@ -147,7 +147,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
           {/* Caption Overlay */}
           <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none">
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-1">
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-1">
                 // ANGLE: {activeAngle.toUpperCase()}
               </span>
               <h3 className="font-syne font-bold text-xl sm:text-2xl text-white">
@@ -184,7 +184,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
       {/* 4. PERFORMANCE TELEMETRY SECTION */}
       <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 mb-20">
         <div className="border-t border-white/[0.08] pt-12">
-          <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-3">
+          <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-3">
             // TELEMETRY BENCHMARKS
           </span>
           <h2 className="font-syne font-black text-3xl sm:text-5xl text-white tracking-tighter uppercase mb-8">
@@ -197,7 +197,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
                 PEAK HORSEPOWER
               </span>
               <div className="flex items-baseline gap-2">
-                <span className="font-grotesk font-black text-4xl sm:text-5xl text-amber-400">
+                <span className="font-grotesk font-black text-4xl sm:text-5xl text-red-500">
                   {engine.powerHp}
                 </span>
                 <span className="text-xs font-mono text-neutral-400">HP</span>
@@ -259,7 +259,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
       <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 mb-20">
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center p-8 sm:p-12 rounded-3xl bg-neutral-900/50 border border-white/[0.08]">
           <div className="lg:col-span-6 space-y-6">
-            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block">
+            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block">
               // ACOUSTIC & MECHANICAL ANATOMY
             </span>
             <h2 className="font-syne font-black text-3xl sm:text-5xl text-white tracking-tighter uppercase leading-[0.95]">
@@ -276,7 +276,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
               </div>
               <div className="flex justify-between py-2 border-b border-white/[0.06]">
                 <span className="text-neutral-400 uppercase">Redline Threshold</span>
-                <span className="text-amber-400 font-bold">{engine.redlineRpm} RPM</span>
+                <span className="text-red-500 font-bold">{engine.redlineRpm} RPM</span>
               </div>
               <div className="flex justify-between py-2 border-b border-white/[0.06]">
                 <span className="text-neutral-400 uppercase">Aspiration</span>
@@ -290,7 +290,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
                 onClick={() => onOpenSoundLab(modelType)}
                 className="px-6 py-3 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/20 font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-3 transition-all cursor-pointer"
               >
-                <Activity className="w-4 h-4 text-amber-400" />
+                <Activity className="w-4 h-4 text-red-500" />
                 <span>EXPLORE SOUND LAB</span>
                 <ArrowRight className="w-4 h-4" />
               </button>
@@ -313,7 +313,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
       {/* 6. EXHAUST METALLURGY SELECTOR (DIRECT ACOUSTIC AUDITION) */}
       <div className="max-w-7xl mx-auto px-6 sm:px-12 md:px-16 mb-20">
         <div className="border-t border-white/[0.08] pt-12">
-          <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-3">
+          <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-3">
             // EXHAUST SYSTEM ACOUSTIC AUDITION
           </span>
           <h2 className="font-syne font-black text-3xl sm:text-5xl text-white tracking-tighter uppercase mb-6">
@@ -354,7 +354,7 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
                   onClick={() => handleAuditionExhaust(mat.id as ExhaustMaterial)}
                   className={`p-6 rounded-2xl text-left border transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-amber-400/10 border-amber-400/80 shadow-xl'
+                      ? 'bg-red-500/10 border-red-500/80 shadow-xl shadow-red-950/30'
                       : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
                   }`}
                 >
@@ -362,12 +362,12 @@ export const EditorialCarDetail: React.FC<EditorialCarDetailProps> = ({
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-syne font-bold text-lg text-white">{mat.name}</span>
                       {isSelected && isPlayingAcoustic && (
-                        <Flame className="w-4 h-4 text-amber-400 animate-bounce" />
+                        <Flame className="w-4 h-4 text-red-500 animate-bounce" />
                       )}
                     </div>
                     <p className="text-xs text-neutral-400 font-sans leading-relaxed">{mat.desc}</p>
                   </div>
-                  <div className="pt-4 flex items-center gap-2 text-[10px] font-mono font-bold text-amber-400 uppercase tracking-widest">
+                  <div className="pt-4 flex items-center gap-2 text-[10px] font-mono font-bold text-red-400 uppercase tracking-widest">
                     <Volume2 className="w-3.5 h-3.5" />
                     <span>AUDITION EXHAUST</span>
                   </div>

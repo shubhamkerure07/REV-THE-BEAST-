@@ -49,7 +49,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-2">
                 // 01 ARCHITECTURE & SCULPTURE
               </span>
               <h2 className="font-syne font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-[0.95]">
@@ -80,7 +80,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20" />
               <div className="absolute bottom-8 left-8 right-8 flex items-end justify-between">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold">
                     SIDE PROFILE SILHOUETTE
                   </span>
                   <h3 className="font-syne font-bold text-2xl text-white mt-1">
@@ -107,7 +107,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 <div className="absolute bottom-6 left-6">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold">
                     FRONT AERO MATRIX
                   </span>
                   <h4 className="font-syne font-bold text-lg text-white mt-0.5">
@@ -128,7 +128,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
                 <div className="absolute bottom-6 left-6">
-                  <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                  <span className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold">
                     REAR WING & DIFFUSER
                   </span>
                   <h4 className="font-syne font-bold text-lg text-white mt-0.5">
@@ -147,13 +147,13 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
             {/* Left Narrative */}
             <div className="lg:col-span-5 space-y-6">
-              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block">
+              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block">
                 // 02 POWERTRAIN MECHANICS
               </span>
               <h2 className="font-syne font-black text-4xl sm:text-5xl text-white tracking-tighter uppercase leading-[0.95]">
                 THE BEATING
                 <br />
-                <span className="italic text-amber-400">HEART.</span>
+                <span className="italic text-red-500">HEART.</span>
               </h2>
 
               <p className="text-sm text-neutral-300 font-sans font-light leading-relaxed">
@@ -165,7 +165,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <div className="space-y-3 pt-2">
                 <div className="flex items-center justify-between py-2 border-b border-white/[0.08] text-xs font-mono">
                   <span className="text-neutral-400 uppercase tracking-widest flex items-center gap-2">
-                    <AnimatedEngineIcon className="w-4 h-4 text-amber-400" />
+                    <AnimatedEngineIcon className="w-4 h-4 text-red-500" />
                     <span>ENGINE ARCHITECTURE</span>
                   </span>
                   <span className="text-white font-bold">{engine.type}</span>
@@ -178,7 +178,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
 
                 <div className="flex items-center justify-between py-2 border-b border-white/[0.08] text-xs font-mono">
                   <span className="text-neutral-400 uppercase tracking-widest">REDLINE CEILING</span>
-                  <span className="text-amber-400 font-bold">{engine.redlineRpm} RPM</span>
+                  <span className="text-red-500 font-bold">{engine.redlineRpm} RPM</span>
                 </div>
 
                 <div className="flex items-center justify-between py-2 border-b border-white/[0.08] text-xs font-mono">
@@ -191,9 +191,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <div className="pt-4">
                 <button
                   onClick={onOpenSoundLab}
-                  className="px-6 py-3.5 rounded-full bg-amber-400 text-black hover:bg-amber-300 font-mono text-xs font-black uppercase tracking-wider flex items-center gap-3 transition-all duration-300 shadow-xl cursor-pointer"
+                  className="px-6 py-3.5 rounded-full bg-red-600 text-white hover:bg-red-500 font-mono text-xs font-black uppercase tracking-wider flex items-center gap-3 transition-all duration-300 shadow-xl shadow-red-950/40 cursor-pointer"
                 >
-                  <AnimatedAudioBarsIcon className="w-4 h-4 text-black" />
+                  <AnimatedAudioBarsIcon className="w-4 h-4 text-white" />
                   <span>TEST ACOUSTICS IN SOUND LAB</span>
                   <ArrowRight className="w-4 h-4" />
                 </button>
@@ -213,7 +213,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
               <div className="absolute bottom-8 left-8 right-8">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="px-2.5 py-0.5 rounded-full bg-amber-400/20 text-amber-300 text-[10px] font-mono uppercase font-bold border border-amber-400/30">
+                  <span className="px-2.5 py-0.5 rounded-full bg-red-500/20 text-red-300 text-[10px] font-mono uppercase font-bold border border-red-500/30">
                     {engine.soundProfile.toUpperCase()}
                   </span>
                   <span className="text-xs font-mono text-neutral-400">{engine.redlineRpm} RPM REDLINE</span>
@@ -235,7 +235,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
         <div className="max-w-7xl mx-auto">
           <div className="flex flex-col md:flex-row md:items-end justify-between mb-16 gap-6">
             <div>
-              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-2">
+              <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-2">
                 // 03 EXHAUST ACOUSTICS
               </span>
               <h2 className="font-syne font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-[0.95]">
@@ -263,7 +263,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
               <div className="absolute bottom-6 left-6">
-                <span className="text-[10px] font-mono uppercase tracking-widest text-amber-400 font-bold">
+                <span className="text-[10px] font-mono uppercase tracking-widest text-red-500 font-bold">
                   HIGH-EXIT DUAL OUTLETS
                 </span>
                 <h4 className="font-syne font-bold text-xl text-white mt-1">
@@ -274,9 +274,9 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
 
             {/* Interactive Exhaust Acoustic Spec Cards */}
             <div className="space-y-4">
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-amber-400/30 transition-all">
+              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-red-500/30 transition-all">
                 <div className="flex items-center gap-3 mb-2">
-                  <AnimatedExhaustIcon className="w-5 h-5 text-amber-400" />
+                  <AnimatedExhaustIcon className="w-5 h-5 text-red-500" />
                   <h4 className="font-syne font-bold text-lg text-white">Titanium Race Spec</h4>
                 </div>
                 <p className="text-xs text-neutral-400 leading-relaxed font-sans">
@@ -285,7 +285,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-amber-400/30 transition-all">
+              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-red-500/30 transition-all">
                 <div className="flex items-center gap-3 mb-2">
                   <Flame className="w-5 h-5 text-rose-500" />
                   <h4 className="font-syne font-bold text-lg text-white">Overrun Decat Backfires</h4>
@@ -296,7 +296,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
                 </p>
               </div>
 
-              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-amber-400/30 transition-all">
+              <div className="p-6 rounded-2xl bg-white/[0.03] border border-white/[0.08] hover:border-red-500/30 transition-all">
                 <div className="flex items-center gap-3 mb-2">
                   <Zap className="w-5 h-5 text-cyan-400" />
                   <h4 className="font-syne font-bold text-lg text-white">2-Step Launch Control</h4>
@@ -315,7 +315,7 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
       <section className="py-24 px-6 sm:px-12 md:px-16 border-t border-white/[0.08] bg-[#08080a]">
         <div className="max-w-7xl mx-auto">
           <div className="text-center max-w-2xl mx-auto mb-16">
-            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-2">
+            <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block mb-2">
               // 04 THE REVOLUTIONARY ECOSYSTEM
             </span>
             <h2 className="font-syne font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-[0.95]">
@@ -329,23 +329,23 @@ export const EditorialStoryScroll: React.FC<EditorialStoryScrollProps> = ({
             {/* Card 1: Garage */}
             <div
               onClick={onOpenGarage}
-              className="group p-8 rounded-3xl bg-neutral-900/60 hover:bg-neutral-900 border border-white/[0.08] hover:border-amber-400/50 transition-all duration-300 flex flex-col justify-between min-h-[300px] cursor-pointer shadow-xl hover:-translate-y-1"
+              className="group p-8 rounded-3xl bg-neutral-900/60 hover:bg-neutral-900 border border-white/[0.08] hover:border-red-500/50 transition-all duration-300 flex flex-col justify-between min-h-[300px] cursor-pointer shadow-xl hover:-translate-y-1"
             >
               <div>
-                <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-amber-400 group-hover:scale-110 transition-transform mb-6">
+                <div className="w-12 h-12 rounded-2xl bg-white/[0.04] border border-white/10 flex items-center justify-center text-red-500 group-hover:scale-110 transition-transform mb-6">
                   <Car className="w-6 h-6" />
                 </div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 font-bold block mb-1">
                   CENTRAL HUB
                 </span>
-                <h3 className="font-syne font-bold text-2xl text-white group-hover:text-amber-400 transition-colors">
+                <h3 className="font-syne font-bold text-2xl text-white group-hover:text-red-500 transition-colors">
                   The Garage
                 </h3>
                 <p className="text-xs text-neutral-400 mt-2 font-sans leading-relaxed">
                   Browse, inspect, and select from the curated multi-vehicle fleet and your custom builds.
                 </p>
               </div>
-              <div className="pt-6 flex items-center gap-2 text-xs font-mono font-bold text-amber-400 uppercase tracking-wider">
+              <div className="pt-6 flex items-center gap-2 text-xs font-mono font-bold text-red-500 uppercase tracking-wider">
                 <span>ENTER GARAGE</span>
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>

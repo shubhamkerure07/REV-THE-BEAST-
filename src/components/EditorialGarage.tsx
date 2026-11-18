@@ -148,7 +148,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
         <div className="flex flex-col md:flex-row md:items-end justify-between border-b border-white/[0.08] pb-8 gap-6">
           <div>
             <div className="flex items-center gap-2 mb-2">
-              <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+              <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
               <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-neutral-400 font-bold">
                 CENTRAL MOTORING HEADQUARTERS
               </span>
@@ -174,7 +174,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                   onClick={() => setActiveTab(tab.id as GarageTopTab)}
                   className={`px-4 py-2.5 rounded-xl font-mono text-xs uppercase font-bold tracking-wider transition-all whitespace-nowrap cursor-pointer flex items-center gap-2 ${
                     isSelected
-                      ? 'bg-amber-400 text-black shadow-lg shadow-amber-400/20'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-950/40'
                       : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
@@ -231,7 +231,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                     onClick={() => onSelectCar(key)}
                     className={`group rounded-3xl overflow-hidden bg-neutral-900/60 border transition-all duration-300 flex flex-col justify-between cursor-pointer hover:-translate-y-1.5 shadow-xl ${
                       isSelected
-                        ? 'border-amber-400/80 ring-1 ring-amber-400/30'
+                        ? 'border-red-500/80 ring-1 ring-red-500/30'
                         : 'border-white/[0.08] hover:border-white/20'
                     }`}
                   >
@@ -261,7 +261,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                           onClick={(e) => handleAuditionSound(e, key)}
                           className={`p-2 rounded-full backdrop-blur-md border transition-all cursor-pointer ${
                             isAuditioning
-                              ? 'bg-amber-400 text-black border-amber-400 animate-pulse'
+                              ? 'bg-red-600 text-white border-red-500 animate-pulse'
                               : 'bg-black/60 text-white border-white/20 hover:bg-white/20'
                           }`}
                           title="Audition exhaust acoustics"
@@ -272,7 +272,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
 
                       {/* Selected Indicator Checkmark */}
                       {isSelected && (
-                        <div className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-amber-400 text-black text-[10px] font-mono font-bold uppercase tracking-wider shadow-lg">
+                        <div className="absolute bottom-4 right-4 flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-600 text-white text-[10px] font-mono font-bold uppercase tracking-wider shadow-lg shadow-red-950/40">
                           <Check className="w-3.5 h-3.5" />
                           <span>SELECTED</span>
                         </div>
@@ -285,7 +285,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                         <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold block mb-1">
                           {item.category} • {item.brand}
                         </span>
-                        <h3 className="font-syne font-bold text-2xl text-white group-hover:text-amber-400 transition-colors">
+                        <h3 className="font-syne font-bold text-2xl text-white group-hover:text-red-500 transition-colors">
                           {item.name}
                         </h3>
                         <p className="text-xs text-neutral-400 mt-1 line-clamp-1 font-sans">
@@ -297,7 +297,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                       <div className="grid grid-cols-3 gap-2 py-3 border-y border-white/[0.08] text-center font-mono">
                         <div className="bg-white/[0.02] p-2 rounded-xl border border-white/[0.04]">
                           <span className="text-[9px] text-neutral-400 block uppercase">OUTPUT</span>
-                          <span className="text-sm font-black text-amber-400">{engine.powerHp} HP</span>
+                          <span className="text-sm font-black text-red-500">{engine.powerHp} HP</span>
                         </div>
                         <div className="bg-white/[0.02] p-2 rounded-xl border border-white/[0.04]">
                           <span className="text-[9px] text-neutral-400 block uppercase">0-100</span>
@@ -336,7 +336,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                             e.stopPropagation();
                             onRace(key);
                           }}
-                          className="py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black transition-all text-center cursor-pointer shadow-md font-black"
+                          className="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all text-center cursor-pointer shadow-md font-black shadow-red-950/40"
                         >
                           RACE
                         </button>
@@ -354,14 +354,14 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
           <div className="space-y-6">
             {savedBuilds.length === 0 ? (
               <div className="p-16 rounded-3xl bg-neutral-900/40 border border-white/[0.08] text-center space-y-4">
-                <Sparkles className="w-12 h-12 text-amber-400/60 mx-auto" />
+                <Sparkles className="w-12 h-12 text-red-500/60 mx-auto" />
                 <h3 className="font-syne font-bold text-2xl text-white">NO SAVED BUILDS FOUND</h3>
                 <p className="text-sm text-neutral-400 max-w-md mx-auto font-sans font-light">
                   Open the Customizer on any vehicle to select custom paint, aerodynamic packages, exhaust materials, and performance stages. Save your build to access it here.
                 </p>
                 <button
                   onClick={() => onCustomize(selectedCar)}
-                  className="mt-4 px-6 py-2.5 rounded-full bg-amber-400 text-black font-mono text-xs font-bold uppercase tracking-wider hover:bg-amber-300 transition-all cursor-pointer"
+                  className="mt-4 px-6 py-2.5 rounded-full bg-red-600 text-white font-mono text-xs font-bold uppercase tracking-wider hover:bg-red-500 shadow-lg shadow-red-950/40 transition-all cursor-pointer"
                 >
                   OPEN CUSTOMIZER
                 </button>
@@ -373,7 +373,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                   return (
                     <div
                       key={b.id}
-                      className="p-6 rounded-3xl bg-neutral-900/60 border border-white/[0.08] hover:border-amber-400/40 transition-all flex flex-col justify-between space-y-6"
+                      className="p-6 rounded-3xl bg-neutral-900/60 border border-white/[0.08] hover:border-red-500/40 transition-all flex flex-col justify-between space-y-6"
                     >
                       <div>
                         <div className="flex items-center justify-between text-xs font-mono text-neutral-400 mb-2">
@@ -392,7 +392,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                             />
                             <span className="text-neutral-300 capitalize">{b.paintFinish}</span>
                           </div>
-                          <span className="text-amber-400 font-bold uppercase">{b.exhaust?.material || 'OEM'}</span>
+                          <span className="text-red-400 font-bold uppercase">{b.exhaust?.material || 'OEM'}</span>
                         </div>
                       </div>
 
@@ -411,7 +411,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                             onSelectCar(b.modelType);
                             onRace(b.modelType);
                           }}
-                          className="py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 text-black transition-all text-center cursor-pointer font-black"
+                          className="py-2.5 rounded-xl bg-red-600 hover:bg-red-500 text-white transition-all text-center cursor-pointer font-black shadow-md shadow-red-950/40"
                         >
                           RACE
                         </button>
@@ -438,13 +438,13 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Vehicle A Selector */}
               <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/[0.08] space-y-4">
-                <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest block">
+                <span className="text-[10px] font-mono text-red-500 font-bold uppercase tracking-widest block">
                   VEHICLE A (ALPHA)
                 </span>
                 <select
                   value={carA}
                   onChange={(e) => setCarA(e.target.value as CarModelType)}
-                  className="w-full bg-black/60 border border-white/20 rounded-2xl px-4 py-3 text-sm font-syne font-bold text-white focus:outline-none focus:border-amber-400"
+                  className="w-full bg-black/60 border border-white/20 rounded-2xl px-4 py-3 text-sm font-syne font-bold text-white focus:outline-none focus:border-red-500"
                 >
                   {vehicleKeys.map((k) => (
                     <option key={k} value={k} className="bg-neutral-900 text-white">
@@ -505,13 +505,13 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                 {/* Metric 1: Output Power */}
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] space-y-2">
                   <div className="flex justify-between items-center text-neutral-400">
-                    <span className="text-amber-400 font-bold">{specsA.engine.powerHp} HP</span>
+                    <span className="text-red-500 font-bold">{specsA.engine.powerHp} HP</span>
                     <span className="uppercase tracking-widest">MAX HORSEPOWER</span>
                     <span className="text-cyan-400 font-bold">{specsB.engine.powerHp} HP</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 h-2 rounded-full overflow-hidden bg-neutral-800">
                     <div
-                      className="h-full bg-amber-400 rounded-l-full"
+                      className="h-full bg-red-600 rounded-l-full"
                       style={{ width: `${Math.min(100, (specsA.engine.powerHp / 1600) * 100)}%` }}
                     />
                     <div
@@ -524,13 +524,13 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                 {/* Metric 2: Torque */}
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] space-y-2">
                   <div className="flex justify-between items-center text-neutral-400">
-                    <span className="text-amber-400 font-bold">{specsA.engine.torqueNm} NM</span>
+                    <span className="text-red-500 font-bold">{specsA.engine.torqueNm} NM</span>
                     <span className="uppercase tracking-widest">PEAK TORQUE</span>
                     <span className="text-cyan-400 font-bold">{specsB.engine.torqueNm} NM</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 h-2 rounded-full overflow-hidden bg-neutral-800">
                     <div
-                      className="h-full bg-amber-400 rounded-l-full"
+                      className="h-full bg-red-600 rounded-l-full"
                       style={{ width: `${Math.min(100, (specsA.engine.torqueNm / 1600) * 100)}%` }}
                     />
                     <div
@@ -543,13 +543,13 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                 {/* Metric 3: Top Speed */}
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] space-y-2">
                   <div className="flex justify-between items-center text-neutral-400">
-                    <span className="text-amber-400 font-bold">{specsA.phys.officialTopSpeedKmh} KM/H</span>
+                    <span className="text-red-500 font-bold">{specsA.phys.officialTopSpeedKmh} KM/H</span>
                     <span className="uppercase tracking-widest">ESTIMATED V-MAX</span>
                     <span className="text-cyan-400 font-bold">{specsB.phys.officialTopSpeedKmh} KM/H</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 h-2 rounded-full overflow-hidden bg-neutral-800">
                     <div
-                      className="h-full bg-amber-400 rounded-l-full"
+                      className="h-full bg-red-600 rounded-l-full"
                       style={{ width: `${Math.min(100, (specsA.phys.officialTopSpeedKmh / 450) * 100)}%` }}
                     />
                     <div
@@ -562,13 +562,13 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                 {/* Metric 4: Power-to-Weight Ratio */}
                 <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.04] space-y-2">
                   <div className="flex justify-between items-center text-neutral-400">
-                    <span className="text-amber-400 font-bold">{specsA.ptw} HP/TON</span>
+                    <span className="text-red-500 font-bold">{specsA.ptw} HP/TON</span>
                     <span className="uppercase tracking-widest">POWER-TO-WEIGHT</span>
                     <span className="text-cyan-400 font-bold">{specsB.ptw} HP/TON</span>
                   </div>
                   <div className="grid grid-cols-2 gap-2 h-2 rounded-full overflow-hidden bg-neutral-800">
                     <div
-                      className="h-full bg-amber-400 rounded-l-full"
+                      className="h-full bg-red-600 rounded-l-full"
                       style={{ width: `${Math.min(100, (specsA.ptw / 1000) * 100)}%` }}
                     />
                     <div
@@ -602,7 +602,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
             {/* Overview Stat Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
               <div className="p-6 rounded-3xl bg-neutral-900/60 border border-white/[0.08] space-y-2">
-                <div className="w-10 h-10 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400">
+                <div className="w-10 h-10 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500">
                   <Trophy className="w-5 h-5" />
                 </div>
                 <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 block">
@@ -657,7 +657,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                   { track: 'Nürburgring GP Circuit', bestLap: '01:28.452', car: 'Lamborghini Aventador SVJ', condition: 'Dry Asphalt' },
                   { track: 'Tokyo C1 Midnight Loop', bestLap: '01:34.120', car: 'Nissan GT-R Nismo R35', condition: 'Night / Damp' },
                   { track: 'Big Sur Coastal Highway', bestLap: '02:05.884', car: 'Ferrari SF90 Stradale', condition: 'Golden Hour' },
-                  { track: 'Quarter-Mile Dragway', bestLap: '00:09.112', car: 'Bugatti Chiron Pur Sport', condition: 'Prepped Surface' },
+                  { track: 'Santa Ana Quarter-Mile Dragway', bestLap: '00:09.112', car: 'Bugatti Chiron Pur Sport', condition: 'Prepped Surface' },
                 ].map((rec, i) => (
                   <div key={i} className="py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                     <div>
@@ -665,7 +665,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                       <span className="text-neutral-400 text-[11px]">{rec.car} • {rec.condition}</span>
                     </div>
                     <div className="text-right">
-                      <span className="text-amber-400 font-bold text-base">{rec.bestLap}</span>
+                      <span className="text-red-500 font-bold text-base">{rec.bestLap}</span>
                     </div>
                   </div>
                 ))}
@@ -691,14 +691,14 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                     key={i}
                     className={`p-5 rounded-2xl border transition-all flex items-start gap-4 ${
                       ach.unlocked
-                        ? 'bg-white/[0.03] border-amber-400/30'
+                        ? 'bg-white/[0.03] border-red-500/30'
                         : 'bg-white/[0.01] border-white/[0.04] opacity-50'
                     }`}
                   >
                     <div
                       className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 ${
                         ach.unlocked
-                          ? 'bg-amber-400/20 text-amber-400 border border-amber-400/40'
+                          ? 'bg-red-500/20 text-red-500 border border-red-500/40'
                           : 'bg-white/5 text-neutral-500 border border-white/10'
                       }`}
                     >
@@ -709,7 +709,7 @@ export const EditorialGarage: React.FC<EditorialGarageProps> = ({
                       <p className="text-xs text-neutral-400 font-sans mt-1 leading-relaxed">{ach.desc}</p>
                       <span
                         className={`text-[9px] font-mono uppercase font-bold tracking-wider mt-2 inline-block ${
-                          ach.unlocked ? 'text-amber-400' : 'text-neutral-500'
+                          ach.unlocked ? 'text-red-500' : 'text-neutral-500'
                         }`}
                       >
                         {ach.unlocked ? 'COMPLETED' : 'LOCKED'}

@@ -105,7 +105,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
         {/* Header */}
         <div className="flex items-center justify-between border-b border-white/10 pb-5">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-amber-400">
+            <div className="w-10 h-10 rounded-xl bg-white/10 border border-white/15 flex items-center justify-center text-red-500">
               <Sliders size={20} />
             </div>
             <div>
@@ -154,10 +154,10 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
           <div className="space-y-1.5 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-neutral-200 uppercase tracking-wider flex items-center gap-2 font-bold">
-                <Volume2 size={14} className="text-amber-400" />
+                <Volume2 size={14} className="text-red-500" />
                 MASTER MIX BUS OUTPUT
               </span>
-              <span className="text-amber-400 font-bold">{masterVolume}%</span>
+              <span className="text-red-500 font-bold">{masterVolume}%</span>
             </div>
             <input
               type="range"
@@ -165,7 +165,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
               max="100"
               value={masterVolume}
               onChange={(e) => handleMasterChange(Number(e.target.value))}
-              className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+              className="w-full accent-red-500 cursor-pointer h-2 bg-neutral-800 rounded-lg"
             />
           </div>
 
@@ -173,10 +173,10 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
           <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-neutral-300 uppercase tracking-wider flex items-center gap-2">
-                <Zap size={14} className="text-amber-400" />
+                <Zap size={14} className="text-red-500" />
                 CRANKSHAFT COMBUSTION HARMONICS
               </span>
-              <span className="text-amber-400 font-bold">{engineVolume}%</span>
+              <span className="text-red-500 font-bold">{engineVolume}%</span>
             </div>
             <input
               type="range"
@@ -184,7 +184,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
               max="100"
               value={engineVolume}
               onChange={(e) => handleEngineGainChange(Number(e.target.value))}
-              className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+              className="w-full accent-red-500 cursor-pointer h-2 bg-neutral-800 rounded-lg"
             />
           </div>
 
@@ -344,7 +344,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
         <div className="border-t border-white/10 pt-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-full bg-white text-black font-black font-syne uppercase tracking-wider text-xs hover:bg-amber-400 transition-all cursor-pointer"
+            className="px-6 py-2.5 rounded-full bg-white text-black font-black font-syne uppercase tracking-wider text-xs hover:bg-red-600 hover:text-white transition-all cursor-pointer shadow-lg"
           >
             CONFIRM & CLOSE
           </button>

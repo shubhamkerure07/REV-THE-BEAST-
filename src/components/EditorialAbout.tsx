@@ -26,13 +26,13 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
         {/* Top Header */}
         <div className="border-b border-white/[0.08] pb-10">
           <div className="flex items-center gap-2 mb-3">
-            <span className="w-2 h-2 rounded-full bg-amber-400 animate-pulse" />
+            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
             <span className="text-[11px] font-mono uppercase tracking-[0.25em] text-neutral-400 font-bold">
               PLATFORM MANIFESTO // 2026 EDITION
             </span>
           </div>
           <h1 className="font-syne font-black text-4xl sm:text-6xl md:text-7xl text-white tracking-tighter uppercase leading-[0.95]">
-            BUILT TO BE <span className="text-amber-400">DRIVEN.</span>
+            BUILT TO BE <span className="text-red-500">DRIVEN.</span>
           </h1>
           <p className="mt-6 max-w-3xl text-sm sm:text-base text-neutral-300 font-sans leading-relaxed font-light">
             REV THE BEAST is a pure passion project engineering the pinnacle of browser-based automotive experiences.
@@ -45,9 +45,9 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
 
         {/* Core Pillars Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-amber-400/40 transition-all">
+          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-red-500/40 transition-all">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-6">
                 <Cpu className="w-6 h-6" />
               </div>
               <h3 className="font-syne font-bold text-xl text-white mb-2">
@@ -64,9 +64,9 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-amber-400/40 transition-all">
+          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-red-500/40 transition-all">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-6">
                 <Volume2 className="w-6 h-6" />
               </div>
               <h3 className="font-syne font-bold text-xl text-white mb-2">
@@ -83,9 +83,9 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
             </div>
           </div>
 
-          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-amber-400/40 transition-all">
+          <div className="p-8 rounded-3xl bg-neutral-900/60 border border-white/[0.08] flex flex-col justify-between hover:border-red-500/40 transition-all">
             <div>
-              <div className="w-12 h-12 rounded-2xl bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-red-500/10 border border-red-500/30 flex items-center justify-center text-red-500 mb-6">
                 <Shield className="w-6 h-6" />
               </div>
               <h3 className="font-syne font-bold text-xl text-white mb-2">
@@ -105,7 +105,7 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
 
         {/* Technical Specification Matrix */}
         <div className="p-8 sm:p-10 rounded-3xl bg-neutral-900/40 border border-white/[0.08] space-y-6">
-          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block">
+          <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-red-500 font-bold block">
             SIMULATOR ARCHITECTURE SPECIFICATIONS
           </span>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-6 font-mono">
@@ -119,7 +119,7 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
               <span className="text-[10px] text-neutral-500 uppercase block mb-1">
                 ACOUSTIC ENGINE
               </span>
-              <span className="text-lg font-bold text-amber-400">Web Audio API</span>
+              <span className="text-lg font-bold text-red-400">Web Audio API</span>
             </div>
             <div>
               <span className="text-[10px] text-neutral-500 uppercase block mb-1">
@@ -156,7 +156,7 @@ export const EditorialAbout: React.FC<EditorialAboutProps> = ({ onNavigate }) =>
             </button>
             <button
               onClick={() => onNavigate('racing')}
-              className="flex-1 sm:flex-none px-8 py-3.5 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-xl flex items-center justify-center gap-2 text-center"
+              className="flex-1 sm:flex-none px-8 py-3.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-xl shadow-red-950/40 flex items-center justify-center gap-2 text-center"
             >
               <Flag className="w-4 h-4" />
               <span>ENTER RACING</span>

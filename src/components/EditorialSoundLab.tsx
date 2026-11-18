@@ -274,11 +274,11 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                   onClick={() => onSelectCar(eng.vehicleModel)}
                   className={`p-3.5 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                     isSelected
-                      ? 'bg-amber-400/15 border-amber-400 text-white shadow-xl'
+                      ? 'bg-red-600/15 border-red-500 text-white shadow-xl shadow-red-950/30'
                       : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20 text-neutral-400'
                   }`}
                 >
-                  <span className="text-[9px] font-mono text-amber-400 font-bold uppercase tracking-wider block mb-1">
+                  <span className="text-[9px] font-mono text-red-500 font-bold uppercase tracking-wider block mb-1">
                     {eng.cylinders.split(' ')[0]}
                   </span>
                   <span className="font-syne font-bold text-xs text-white truncate block">
@@ -301,7 +301,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
             <div className="relative rounded-3xl overflow-hidden bg-[#0a0a0f] border border-white/[0.08] shadow-2xl p-4">
               <div className="flex items-center justify-between pb-3 border-b border-white/[0.08] text-xs font-mono">
                 <span className="text-neutral-400 flex items-center gap-2">
-                  <AnimatedAudioBarsIcon className="w-4 h-4 text-amber-400" />
+                  <AnimatedAudioBarsIcon className="w-4 h-4 text-red-500" />
                   <span>ACOUSTIC FREQUENCY SPECTRUM (FOURIER HARMONICS)</span>
                 </span>
                 <span className={`font-bold ${isAudioRunning ? 'text-emerald-400' : 'text-neutral-500'}`}>
@@ -342,7 +342,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
 
               <div className="flex flex-col items-end gap-2 font-mono text-xs">
                 <span className="text-neutral-400">
-                  REDLINE: <strong className="text-amber-400">{engine.redlineRpm} RPM</strong>
+                  REDLINE: <strong className="text-red-500">{engine.redlineRpm} RPM</strong>
                 </span>
                 <span className="text-neutral-400">
                   BOOST: <strong className="text-cyan-400">{boostPsi} PSI</strong>
@@ -370,7 +370,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                 className={`px-6 py-3.5 rounded-full font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-xl ${
                   isAudioRunning
                     ? 'bg-rose-600 hover:bg-rose-500 text-white shadow-rose-600/30'
-                    : 'bg-amber-400 hover:bg-amber-300 text-black shadow-amber-400/20'
+                    : 'bg-red-600 hover:bg-red-500 text-white shadow-red-950/40'
                 }`}
               >
                 {isColdStarting ? 'CRANKING...' : isAudioRunning ? 'STOP ENGINE' : 'START ENGINE'}
@@ -383,7 +383,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                 <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold">
                   TACTILE BILLET THROTTLE PEDAL
                 </span>
-                <span className="text-xs font-mono text-amber-400">PRESS & HOLD (OR SPACEBAR)</span>
+                <span className="text-xs font-mono text-red-400">PRESS & HOLD (OR SPACEBAR)</span>
               </div>
 
               {/* Big Machined Aluminum Pedal */}
@@ -400,7 +400,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                 }}
                 className={`relative w-full h-36 rounded-2xl border-2 transition-all flex flex-col items-center justify-center cursor-pointer select-none touch-none shadow-2xl ${
                   isPedalPressed
-                    ? 'bg-gradient-to-b from-amber-500 via-amber-600 to-rose-600 border-amber-300 scale-[0.98] shadow-amber-500/40 text-black'
+                    ? 'bg-gradient-to-b from-red-600 via-rose-600 to-red-800 border-red-400 scale-[0.98] shadow-red-950/60 text-white'
                     : 'bg-gradient-to-b from-neutral-800 to-neutral-900 border-white/20 hover:border-white/40 text-white'
                 }`}
               >
@@ -433,7 +433,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                     onClick={() => handleSelectValve(mode)}
                     className={`py-2 rounded-xl uppercase font-bold tracking-wider border transition-all cursor-pointer ${
                       valveMode === mode
-                        ? 'bg-amber-400 text-black border-amber-400 shadow-md'
+                        ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-950/40'
                         : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
                     }`}
                   >
@@ -452,7 +452,7 @@ export const EditorialSoundLab: React.FC<EditorialSoundLabProps> = ({
                       : 'bg-white/[0.03] border-white/[0.08] text-neutral-300 hover:bg-white/[0.08]'
                   }`}
                 >
-                  <Zap className="w-4 h-4 text-amber-400" />
+                  <Zap className="w-4 h-4 text-red-400" />
                   <span>{is2StepActive ? '2-STEP ARMED' : 'ARM 2-STEP'}</span>
                 </button>
 

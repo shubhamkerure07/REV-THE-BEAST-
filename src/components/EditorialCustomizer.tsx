@@ -239,7 +239,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
 
             {/* In-Customizer Machine Switcher Dropdown */}
             <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-2xl px-3 py-1.5">
-              <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">
+              <span className="text-[10px] font-mono text-red-500 font-bold uppercase tracking-widest">
                 MACHINE:
               </span>
               <select
@@ -270,7 +270,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
 
             <button
               onClick={() => onRace(config.modelType)}
-              className="flex-1 md:flex-none px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 text-center"
+              className="flex-1 md:flex-none px-6 py-2.5 rounded-full bg-red-600 hover:bg-red-500 text-white font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg shadow-red-950/40 flex items-center justify-center gap-2 text-center"
             >
               <Flag className="w-3.5 h-3.5" />
               <span>RACE THIS SPEC</span>
@@ -289,7 +289,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                   onClick={() => setViewMode('3d')}
                   className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === '3d'
-                      ? 'bg-amber-400 text-black shadow-lg'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-950/40'
                       : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
@@ -300,7 +300,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                   onClick={() => setViewMode('studio')}
                   className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === 'studio'
-                      ? 'bg-amber-400 text-black shadow-lg'
+                      ? 'bg-red-600 text-white shadow-lg shadow-red-950/40'
                       : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
                   }`}
                 >
@@ -345,7 +345,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                           }}
                           className={`px-2.5 py-1 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
                             isCurrent
-                              ? 'bg-amber-400 text-black shadow-md'
+                              ? 'bg-red-600 text-white shadow-md shadow-red-950/40'
                               : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
                           }`}
                         >
@@ -367,7 +367,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                           }}
                           className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
                             isCurrent
-                              ? 'bg-amber-400 text-black shadow-md'
+                              ? 'bg-red-600 text-white shadow-md shadow-red-950/40'
                               : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
                           }`}
                         >
@@ -408,8 +408,8 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                 </div>
 
                 {isAuditioning && (
-                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-400 text-black font-mono text-xs font-bold animate-bounce shadow-xl">
-                    <Flame className="w-4 h-4 fill-black" />
+                  <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-red-600 text-white font-mono text-xs font-bold animate-bounce shadow-xl shadow-red-950/60">
+                    <Flame className="w-4 h-4 fill-white" />
                     <span>ACOUSTICS AUDITION ACTIVE</span>
                   </div>
                 )}
@@ -420,7 +420,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             <div className="p-4 rounded-2xl bg-neutral-900/60 border border-white/[0.08] grid grid-cols-2 sm:grid-cols-5 gap-3 text-center font-mono text-xs">
               <div className="p-2 rounded-xl bg-white/[0.02]">
                 <span className="text-[9px] text-neutral-400 uppercase block">TUNED OUTPUT</span>
-                <span className="text-base font-black text-amber-400">{tunedStats.powerHp} HP</span>
+                <span className="text-base font-black text-red-500">{tunedStats.powerHp} HP</span>
                 {tunedStats.powerGain > 0 && (
                   <span className="text-[9px] text-emerald-400 font-bold block">+{tunedStats.powerGain} HP</span>
                 )}
@@ -469,7 +469,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     onClick={() => setActiveTab(tab.id as CustomizerTab)}
                     className={`flex-1 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
                       isSelected
-                        ? 'bg-amber-400 text-black shadow-md'
+                        ? 'bg-red-600 text-white shadow-md shadow-red-950/40'
                         : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
                     }`}
                   >
@@ -495,7 +495,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                         onClick={() => onChangeConfig((p) => ({ ...p, paintFinish: finish }))}
                         className={`py-2 rounded-xl uppercase font-bold tracking-wider border transition-all cursor-pointer ${
                           config.paintFinish === finish
-                            ? 'bg-amber-400 text-black border-amber-400 shadow-md'
+                            ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-950/40'
                             : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
                         }`}
                       >
@@ -550,7 +550,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                 <div>
                   <div className="flex items-center justify-between text-xs font-mono mb-2">
                     <span className="text-neutral-400 uppercase tracking-wider">WINDOW CERAMIC TINT</span>
-                    <span className="text-amber-400 font-bold">{Math.round(config.windowTint * 100)}% OPACITY</span>
+                    <span className="text-red-500 font-bold">{Math.round(config.windowTint * 100)}% OPACITY</span>
                   </div>
                   <input
                     type="range"
@@ -560,7 +560,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     onChange={(e) =>
                       onChangeConfig((p) => ({ ...p, windowTint: Number(e.target.value) / 100 }))
                     }
-                    className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+                    className="w-full accent-red-500 cursor-pointer h-2 bg-neutral-800 rounded-lg"
                   />
                 </div>
               </div>
@@ -588,7 +588,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                           }
                           className={`w-full p-3 rounded-2xl border transition-all flex items-center justify-between cursor-pointer ${
                             isSelected
-                              ? 'bg-amber-400/10 border-amber-400/60 shadow-md'
+                              ? 'bg-red-500/10 border-red-500/60 shadow-md shadow-red-950/30'
                               : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
                           }`}
                         >
@@ -599,7 +599,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                             />
                             <span className="text-xs font-mono font-bold text-white">{rim.name}</span>
                           </div>
-                          {isSelected && <Check className="w-4 h-4 text-amber-400" />}
+                          {isSelected && <Check className="w-4 h-4 text-red-500" />}
                         </button>
                       );
                     })}
@@ -669,7 +669,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                           }
                           className={`py-2 rounded-xl uppercase font-bold tracking-wider border transition-all cursor-pointer ${
                             config.aero.spoilerStyle === style
-                              ? 'bg-amber-400 text-black border-amber-400'
+                              ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-950/40'
                               : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
                           }`}
                         >
@@ -700,7 +700,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     <div
                       className={`w-5 h-5 rounded-md border flex items-center justify-center ${
                         config.aero.frontSplitter
-                          ? 'bg-amber-400 border-amber-400 text-black'
+                          ? 'bg-red-600 border-red-500 text-white'
                           : 'border-white/20'
                       }`}
                     >
@@ -729,7 +729,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     <div
                       className={`w-5 h-5 rounded-md border flex items-center justify-center ${
                         config.aero.rearDiffuserFins
-                          ? 'bg-amber-400 border-amber-400 text-black'
+                          ? 'bg-red-600 border-red-500 text-white'
                           : 'border-white/20'
                       }`}
                     >
@@ -744,7 +744,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             {activeTab === 'exhaust' && (
               <div className="space-y-4 p-6 rounded-3xl bg-neutral-900/50 border border-white/[0.08] animate-fadeIn">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 font-bold block mb-1">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-red-500 font-bold block mb-1">
                     EXHAUST LAB // DIRECT ACOUSTIC TRANSFORMATION
                   </span>
                   <p className="text-xs text-neutral-400 font-sans">
@@ -764,13 +764,13 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                         onClick={() => handleAuditionExhaust(ex.material, ex.style)}
                         className={`w-full p-4 rounded-2xl border text-left transition-all cursor-pointer flex flex-col justify-between ${
                           isSelected
-                            ? 'bg-amber-400/10 border-amber-400 shadow-xl'
+                            ? 'bg-red-500/10 border-red-500 shadow-xl shadow-red-950/30'
                             : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
                         }`}
                       >
                         <div className="flex items-center justify-between mb-1.5">
                           <span className="font-syne font-bold text-base text-white">{ex.name}</span>
-                          <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-wider flex items-center gap-1">
+                          <span className="text-[10px] font-mono text-red-400 font-bold uppercase tracking-wider flex items-center gap-1">
                             <Volume2 className="w-3.5 h-3.5" /> AUDITION
                           </span>
                         </div>
@@ -786,7 +786,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             {activeTab === 'performance' && (
               <div className="space-y-4 p-6 rounded-3xl bg-neutral-900/50 border border-white/[0.08] animate-fadeIn">
                 <div>
-                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 font-bold block mb-1">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-red-500 font-bold block mb-1">
                     PERFORMANCE ENGINEERING & SIMULATION PARAMETERS
                   </span>
                   <p className="text-xs text-neutral-400 font-sans">
@@ -799,7 +799,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                   <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] space-y-2">
                     <div className="flex justify-between items-center text-xs font-mono">
                       <span className="text-white font-bold uppercase">ECU FUEL & IGNITION CALIBRATION</span>
-                      <span className="text-amber-400 font-bold">STAGE {currentTuning.ecuStage}</span>
+                      <span className="text-red-500 font-bold">STAGE {currentTuning.ecuStage}</span>
                     </div>
                     <div className="grid grid-cols-4 gap-2 font-mono text-xs">
                       {[
@@ -813,7 +813,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                           onClick={() => updateTuning((t) => ({ ...t, ecuStage: s.stage as any }))}
                           className={`py-2 rounded-xl font-bold uppercase tracking-wider border transition-all cursor-pointer text-[10px] ${
                             currentTuning.ecuStage === s.stage
-                              ? 'bg-amber-400 text-black border-amber-400'
+                              ? 'bg-red-600 text-white border-red-500 shadow-md shadow-red-950/40'
                               : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
                           }`}
                         >
