@@ -263,7 +263,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
       const effectiveBrake = isBrakePressed ? 1.0 : 0.0;
 
       // Calculate acceleration
-      const horsePower = engine.horsePower || 700;
+      const horsePower = engine.powerHp || 700;
       const weightKg = 1520;
       const currentGearRatio = gearRatios[currentGear - 1] || 1.0;
       const aeroDragFactor = drsActive ? 0.00038 : 0.00052;
@@ -421,7 +421,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
               </div>
               <div className="text-right border-l border-white/10 pl-4">
                 <div className="text-xs font-mono font-bold text-amber-400">
-                  {engine.horsePower} HP
+                  {engine.powerHp} HP
                 </div>
                 <div className="text-[10px] font-mono text-neutral-400">
                   {topSpeedKmh} KM/H
@@ -934,7 +934,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
                     MAX POWER EXTRACTED
                   </div>
                   <div className="text-3xl font-black font-syne text-emerald-400 mt-1">
-                    {engine.horsePower} <span className="text-xs font-mono text-neutral-400">HP</span>
+                    {engine.powerHp} <span className="text-xs font-mono text-neutral-400">HP</span>
                   </div>
                 </div>
               </div>

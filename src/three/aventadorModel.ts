@@ -246,20 +246,22 @@ export function buildLamboAventadorModel(
     rimT0BMeshes.forEach((m) => (m.visible = isStar));
 
     // 5. Lights
-    headlightEmissiveMat.color.set(config.headlights ? 0xffffff : 0x222222);
-    taillightEmissiveMat.color.set(config.taillights ? 0xff2200 : 0x330000);
+    const isLightsOn = config.lightsOn;
+    headlightEmissiveMat.color.set(isLightsOn ? 0xffffff : 0x222222);
+    taillightEmissiveMat.color.set(isLightsOn ? 0xff2200 : 0x330000);
 
     // 6. Exhaust Material
     if (exhaustMaterial) {
-      if (config.exhaustConfig.material === 'titanium') {
+      const exMat = config.exhaustConfig?.material || 'titanium';
+      if (exMat === 'titanium') {
         exhaustMaterial.color.set(0x38bdf8); // Burnt blue titanium
         exhaustMaterial.metalness = 0.95;
         exhaustMaterial.roughness = 0.18;
-      } else if (config.exhaustConfig.material === 'carbon') {
+      } else if (exMat === 'carbon') {
         exhaustMaterial.color.set(0x18181b);
         exhaustMaterial.metalness = 0.4;
         exhaustMaterial.roughness = 0.35;
-      } else if (config.exhaustConfig.material === 'racing') {
+      } else if (exMat === 'racing') {
         exhaustMaterial.color.set(0x27272a);
         exhaustMaterial.metalness = 0.7;
         exhaustMaterial.roughness = 0.55;
@@ -277,7 +279,7 @@ export function buildLamboAventadorModel(
   let wheelRotX = 0;
   const updateAnimations = (delta: number, config: CarConfigState) => {
     if (config.isDriving) {
-      const speed = config.drivingSpeed || 40;
+      const speed = (config.driveSpeed || 1.0) * 40;
       wheelRotX += (speed / 3.6 / 0.35) * delta;
       wheelMeshes.forEach((m) => {
         m.rotation.z = wheelRotX; // Axis of wheel rotation in this GLB

@@ -163,8 +163,10 @@ export const EditorialAiLab: React.FC<EditorialAiLabProps> = ({
 
   const handleDeploy = () => {
     if (!synthesizedCar) return;
+    const modelType: CarModelType =
+      synthesizedCar.soundProfile === 'electric-motor' ? 'beast-ev' : 'beast-v12-ai';
     onDeployToGarage({
-      modelType: 'beast-v12-ai',
+      modelType,
       name: synthesizedCar.name,
       soundProfile: synthesizedCar.soundProfile,
       paintColor: synthesizedCar.paintColor,

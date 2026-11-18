@@ -12,6 +12,8 @@ import {
   Wind,
   Shield,
   Layers,
+  Box,
+  Camera,
 } from 'lucide-react';
 import {
   CarConfigState,
@@ -23,6 +25,7 @@ import {
 import { getVehicleMedia } from '../data/vehicleMedia';
 import { getEngineForModel } from '../data/engines';
 import { engineSound } from '../utils/audio';
+import { CarViewer } from '../three/CarViewer';
 
 interface EditorialCustomizerProps {
   config: CarConfigState;
@@ -101,6 +104,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<CustomizerTab>('paint');
   const [isAuditioning, setIsAuditioning] = useState<boolean>(false);
+  const [viewMode, setViewMode] = useState<'3d' | 'studio'>('3d');
 
   const media = getVehicleMedia(config.modelType);
   const engine = getEngineForModel(config.modelType);
@@ -182,53 +186,104 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
 
         {/* Studio Grid: Left Studio Canvas / Photography Preview + Right Studio Panel */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* LEFT 7 COLS: PHOTOGRAPHY PREVIEW WITH REAL-TIME GLAZE */}
+          {/* LEFT 7 COLS: 3D INTERACTIVE CANVAS / PHOTOGRAPHY PREVIEW WITH REAL-TIME GLAZE */}
           <div className="lg:col-span-7 space-y-4">
+            {/* View Mode Switcher Header */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-1.5 p-1 rounded-2xl bg-white/[0.04] border border-white/[0.08]">
+                <button
+                  onClick={() => setViewMode('3d')}
+                  className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewMode === '3d'
+                      ? 'bg-amber-400 text-black shadow-lg'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Box className="w-3.5 h-3.5" />
+                  <span>3D Interactive</span>
+                </button>
+                <button
+                  onClick={() => setViewMode('studio')}
+                  className={`px-3.5 py-1.5 rounded-xl font-mono text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all cursor-pointer ${
+                    viewMode === 'studio'
+                      ? 'bg-amber-400 text-black shadow-lg'
+                      : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                  }`}
+                >
+                  <Camera className="w-3.5 h-3.5" />
+                  <span>Photo Studio</span>
+                </button>
+              </div>
+
+              <div className="hidden sm:flex items-center gap-2 text-[10px] font-mono text-neutral-400 tracking-widest uppercase">
+                {viewMode === '3d' ? (
+                  <span className="flex items-center gap-1.5 text-emerald-400">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping" />
+                    360° Drag Orbit • Scroll Zoom
+                  </span>
+                ) : (
+                  <span>Curated Editorial Glaze</span>
+                )}
+              </div>
+            </div>
+
             <div className="relative w-full rounded-3xl overflow-hidden bg-neutral-900 border border-white/[0.08] shadow-2xl h-[45vh] sm:h-[55vh] md:h-[65vh]">
-              {/* Base High-Resolution Car Photograph */}
-              <img
-                src={media.photos.side.url}
-                alt={media.name}
-                onError={(e) => {
-                  e.currentTarget.src = media.photos.hero.url;
-                }}
-                className="w-full h-full object-cover object-center"
-              />
+              {viewMode === '3d' ? (
+                <div className="w-full h-full relative">
+                  <CarViewer config={config} />
+                  <div className="absolute top-4 left-4 pointer-events-none px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                    <span>WEBGL SHADER ENGINE ACTIVE</span>
+                  </div>
+                </div>
+              ) : (
+                <>
+                  {/* Base High-Resolution Car Photograph */}
+                  <img
+                    src={media.photos.side.url}
+                    alt={media.name}
+                    onError={(e) => {
+                      e.currentTarget.src = media.photos.hero.url;
+                    }}
+                    className="w-full h-full object-cover object-center"
+                  />
 
-              {/* Real-Time Paint Color Glaze Filter */}
-              <div
-                className="absolute inset-0 pointer-events-none transition-all duration-500"
-                style={{
-                  backgroundColor: config.paintColor,
-                  mixBlendMode: config.paintFinish === 'matte' ? 'color-burn' : 'soft-light',
-                  opacity: config.paintFinish === 'frozen' ? 0.35 : config.paintFinish === 'matte' ? 0.45 : 0.3,
-                }}
-              />
+                  {/* Real-Time Paint Color Glaze Filter */}
+                  <div
+                    className="absolute inset-0 pointer-events-none transition-all duration-500"
+                    style={{
+                      backgroundColor: config.paintColor,
+                      mixBlendMode: config.paintFinish === 'matte' ? 'color-burn' : 'soft-light',
+                      opacity: config.paintFinish === 'frozen' ? 0.35 : config.paintFinish === 'matte' ? 0.45 : 0.3,
+                    }}
+                  />
 
-              {/* Realistic Sheen / Clearcoat Highlight Layer */}
-              {config.paintFinish === 'metallic' && (
-                <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent mix-blend-screen opacity-50" />
+                  {/* Realistic Sheen / Clearcoat Highlight Layer */}
+                  {config.paintFinish === 'metallic' && (
+                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent mix-blend-screen opacity-50" />
+                  )}
+                  {config.paintFinish === 'frozen' && (
+                    <div className="absolute inset-0 pointer-events-none bg-black/20 backdrop-blur-[0.5px] opacity-40" />
+                  )}
+
+                  {/* Studio Backdrop Vignette */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                </>
               )}
-              {config.paintFinish === 'frozen' && (
-                <div className="absolute inset-0 pointer-events-none bg-black/20 backdrop-blur-[0.5px] opacity-40" />
-              )}
-
-              {/* Studio Backdrop Vignette */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
 
               {/* Live Status Badge */}
               <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between pointer-events-none">
-                <div>
+                <div className="bg-black/60 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10">
                   <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-1">
-                    STUDIO SPECIFICATION
+                    {viewMode === '3d' ? '3D REAL-TIME CANVAS' : 'STUDIO SPECIFICATION'}
                   </span>
-                  <h3 className="font-syne font-bold text-2xl text-white">
+                  <h3 className="font-syne font-bold text-xl sm:text-2xl text-white">
                     {media.name}
                   </h3>
                   <div className="flex items-center gap-2 mt-1 text-xs font-mono text-neutral-300">
                     <span className="capitalize">{config.paintFinish} Sheen</span>
                     <span>•</span>
-                    <span className="uppercase">{config.exhaustConfig.material} Exhaust</span>
+                    <span className="uppercase">{(config.exhaustConfig?.material || 'titanium')} Exhaust</span>
                   </div>
                 </div>
 
@@ -243,7 +298,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
 
             {/* Quick Helper Notice */}
             <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-2">
-              <span>Dynamic Photographic Glaze • Real Acoustic Filtering</span>
+              <span>{viewMode === '3d' ? 'Full Interactive Orbit • Real-time Materials' : 'Dynamic Photographic Glaze • Real Acoustic Filtering'}</span>
               <span className="text-amber-400 font-bold">{engine.powerHp} HP • {engine.type}</span>
             </div>
           </div>
@@ -434,8 +489,8 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                 <div className="space-y-3">
                   {EXHAUST_CONFIGS.map((ex) => {
                     const isSelected =
-                      config.exhaustConfig.material === ex.material &&
-                      config.exhaustConfig.style === ex.style;
+                      (config.exhaustConfig?.material || 'titanium') === ex.material &&
+                      (config.exhaustConfig?.style || 'quad') === ex.style;
 
                     return (
                       <button

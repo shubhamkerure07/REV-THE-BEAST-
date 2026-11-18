@@ -283,7 +283,16 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
       }
 
       // Update Car Animations (doors, hood, wheels, vibration)
-      if (config.modelType === 'procedural-m4' && carInstanceRef.current) {
+      const isM4FamilyModel =
+        config.modelType === 'procedural-m4' ||
+        config.modelType === 'ferrari-sf90' ||
+        config.modelType === 'bugatti-chiron' ||
+        config.modelType === 'beast-v12-ai' ||
+        config.modelType === 'beast-ev' ||
+        config.modelType === 're-gt650' ||
+        config.modelType === 're-shotgun650';
+
+      if (isM4FamilyModel && carInstanceRef.current) {
         carInstanceRef.current.updateAnimations(delta, config);
       } else if (config.modelType === 'bmw-5series' && bmw5SeriesRef.current) {
         bmw5SeriesRef.current.updateAnimations(delta, config);
@@ -487,9 +496,18 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
 
   // Update Car Config on Props change for whichever model is active
   useEffect(() => {
+    const isM4FamilyModel =
+      config.modelType === 'procedural-m4' ||
+      config.modelType === 'ferrari-sf90' ||
+      config.modelType === 'bugatti-chiron' ||
+      config.modelType === 'beast-v12-ai' ||
+      config.modelType === 'beast-ev' ||
+      config.modelType === 're-gt650' ||
+      config.modelType === 're-shotgun650';
+
     if (config.modelType === 'lambo-aventador' && lamboRef.current) {
       lamboRef.current.updateConfig(config);
-    } else if (config.modelType === 'procedural-m4' && carInstanceRef.current) {
+    } else if (isM4FamilyModel && carInstanceRef.current) {
       carInstanceRef.current.updateConfig(config);
     } else if (config.modelType === 'bmw-5series' && bmw5SeriesRef.current) {
       bmw5SeriesRef.current.updateConfig(config);

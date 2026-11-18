@@ -662,7 +662,7 @@ export class RealisticEngineSynthesizer {
 
     // Wave Shaper for Combustion Cylinder Pressure
     this.waveShaper = ctx.createWaveShaper();
-    this.waveShaper.curve = this.makeDistortionCurve(cfg.combustionSharpness);
+    this.waveShaper.curve = this.makeDistortionCurve(cfg.combustionSharpness) as any;
     this.waveShaper.oversample = '4x';
 
     // Resonators (Exhaust Header & Tailpipe)
@@ -936,18 +936,59 @@ export class RealisticEngineSynthesizer {
     }, 650);
   }
 
-  public toggleLaunchControl(active: boolean) {
-    const cfg = ACOUSTIC_PROFILES[this.profile];
-    if (cfg.isElectric) return; // EV launch control is silent instant torque
+  public playColdStart(onComplete?: () => void) {
+    this.triggerColdStart(onComplete);
+  }
 
-    this.isLaunchControlActive = active;
-    if (active) {
+  public toggleLaunchControl(active?: boolean): boolean {
+    const cfg = ACOUSTIC_PROFILES[this.profile];
+    if (cfg.isElectric) return false;
+
+    const nextState = typeof active === 'boolean' ? active : !this.isLaunchControlActive;
+    this.isLaunchControlActive = nextState;
+    if (nextState) {
       if (!this.isRunning) this.start();
       const launchRpm = this.profile === 'supercharged-i4' ? 8800 : Math.min(cfg.redlineRpm * 0.72, 5200);
       this.targetRpm = launchRpm;
     } else {
       this.targetRpm = cfg.idleRpm;
     }
+    return nextState;
+  }
+
+  public triggerDynoPull(onComplete?: () => void) {
+    this.initAudioContext();
+    if (!this.ctx) return;
+    const cfg = ACOUSTIC_PROFILES[this.profile];
+    if (!this.isRunning) this.start();
+
+    let gear = 1;
+    const stepGear = () => {
+      if (gear > 4) {
+        this.targetRpm = cfg.idleRpm;
+        this.triggerBlowOffValve();
+        setTimeout(() => {
+          this.triggerExhaustBackfire();
+          onComplete?.();
+        }, 300);
+        return;
+      }
+
+      this.targetRpm = cfg.redlineRpm * 0.94;
+      setTimeout(() => {
+        this.triggerExhaustBackfire();
+        this.triggerBlowOffValve();
+        this.targetRpm = cfg.idleRpm * 2.2;
+        gear++;
+        setTimeout(stepGear, 400);
+      }, 700);
+    };
+
+    stepGear();
+  }
+
+  public playDynoPull(onComplete?: () => void) {
+    this.triggerDynoPull(onComplete);
   }
 
   public getIsLaunchControl(): boolean {
@@ -1078,6 +1119,10 @@ export class RealisticEngineSynthesizer {
     setTimeout(() => {
       this.targetRpm = prev;
     }, 280);
+  }
+
+  public playThrottleBlip() {
+    this.triggerThrottleBlip();
   }
 
   private startPhysicsLoop() {
