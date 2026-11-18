@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Sliders,
   Palette,
@@ -14,6 +14,10 @@ import {
   Layers,
   Box,
   Camera,
+  Zap,
+  Gauge,
+  Activity,
+  Cpu,
 } from 'lucide-react';
 import {
   CarConfigState,
@@ -21,11 +25,13 @@ import {
   ExhaustMaterial,
   ExhaustStyle,
   PaintFinish,
+  TuningStageConfig,
 } from '../types';
 import { getVehicleMedia } from '../data/vehicleMedia';
 import { getEngineForModel } from '../data/engines';
 import { engineSound } from '../utils/audio';
 import { CarViewer } from '../three/CarViewer';
+import { getTunedPerformanceStats } from '../utils/vehicleMechanics';
 
 interface EditorialCustomizerProps {
   config: CarConfigState;
@@ -35,7 +41,7 @@ interface EditorialCustomizerProps {
   showToast: (msg: string) => void;
 }
 
-type CustomizerTab = 'paint' | 'wheels' | 'exhaust' | 'aero';
+type CustomizerTab = 'paint' | 'wheels' | 'aero' | 'exhaust' | 'performance';
 
 const ICONIC_PALETTES = [
   { id: 'arancio-atlas', name: 'Arancio Atlas (Amber Orange)', hex: '#f77f21', finish: 'metallic' as PaintFinish },
@@ -109,6 +115,35 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
   const media = getVehicleMedia(config.modelType);
   const engine = getEngineForModel(config.modelType);
 
+  // Active tuning or fallback to stage 0
+  const currentTuning: TuningStageConfig = useMemo(() => {
+    return (
+      config.tuning || {
+        ecuStage: 0,
+        turboStage: 0,
+        exhaustStage: 0,
+        tireStage: 0,
+        brakeStage: 0,
+        suspensionStage: 0,
+      }
+    );
+  }, [config.tuning]);
+
+  // Compute live tuned performance stats
+  const tunedStats = useMemo(() => {
+    return getTunedPerformanceStats(config.modelType, currentTuning);
+  }, [config.modelType, currentTuning]);
+
+  const updateTuning = (updater: (prev: TuningStageConfig) => TuningStageConfig) => {
+    onChangeConfig((prev) => {
+      const nextTuning = updater(currentTuning);
+      return {
+        ...prev,
+        tuning: nextTuning,
+      };
+    });
+  };
+
   const handleAuditionExhaust = (mat: ExhaustMaterial, style: ExhaustStyle) => {
     onChangeConfig((prev) => ({
       ...prev,
@@ -145,16 +180,17 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
         paintFinish: config.paintFinish,
         wheels: config.wheels,
         exhaust: config.exhaustConfig,
+        tuning: currentTuning,
       });
       localStorage.setItem('rev_beast_custom_builds', JSON.stringify(saved));
-      showToast('Build saved to your personal garage!');
+      showToast('Bespoke build saved to your personal garage!');
     } catch {
       showToast('Build recorded successfully');
     }
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#08080a] text-neutral-100 select-none pt-24 pb-24 px-6 sm:px-12 md:px-16">
+    <div className="w-full min-h-screen bg-[#08080a] text-neutral-100 select-none pt-24 pb-24 px-6 sm:px-12 md:px-16 animate-fadeIn">
       <div className="max-w-7xl mx-auto">
         {/* Top Navigation */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6 mb-8">
@@ -163,7 +199,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             className="flex items-center gap-2 text-neutral-400 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors cursor-pointer group"
           >
             <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>BACK TO DETAILS</span>
+            <span>BACK TO GARAGE</span>
           </button>
 
           <div className="flex items-center gap-3 w-full sm:w-auto">
@@ -184,9 +220,9 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
           </div>
         </div>
 
-        {/* Studio Grid: Left Studio Canvas / Photography Preview + Right Studio Panel */}
+        {/* Studio Grid: Left Studio Canvas + Right Customizer Categories */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
-          {/* LEFT 7 COLS: 3D INTERACTIVE CANVAS / PHOTOGRAPHY PREVIEW WITH REAL-TIME GLAZE */}
+          {/* LEFT 7 COLS: 3D INTERACTIVE CANVAS / PHOTOGRAPHY PREVIEW */}
           <div className="lg:col-span-7 space-y-4">
             {/* View Mode Switcher Header */}
             <div className="flex items-center justify-between">
@@ -233,12 +269,11 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                   <CarViewer config={config} />
                   <div className="absolute top-4 left-4 pointer-events-none px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>WEBGL SHADER ENGINE ACTIVE</span>
+                    <span>WEBGL REAL-TIME SHADER ENGINE</span>
                   </div>
                 </div>
               ) : (
                 <>
-                  {/* Base High-Resolution Car Photograph */}
                   <img
                     src={media.photos.side.url}
                     alt={media.name}
@@ -247,35 +282,15 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     }}
                     className="w-full h-full object-cover object-center"
                   />
-
-                  {/* Real-Time Paint Color Glaze Filter */}
-                  <div
-                    className="absolute inset-0 pointer-events-none transition-all duration-500"
-                    style={{
-                      backgroundColor: config.paintColor,
-                      mixBlendMode: config.paintFinish === 'matte' ? 'color-burn' : 'soft-light',
-                      opacity: config.paintFinish === 'frozen' ? 0.35 : config.paintFinish === 'matte' ? 0.45 : 0.3,
-                    }}
-                  />
-
-                  {/* Realistic Sheen / Clearcoat Highlight Layer */}
-                  {config.paintFinish === 'metallic' && (
-                    <div className="absolute inset-0 pointer-events-none bg-gradient-to-tr from-transparent via-white/10 to-transparent mix-blend-screen opacity-50" />
-                  )}
-                  {config.paintFinish === 'frozen' && (
-                    <div className="absolute inset-0 pointer-events-none bg-black/20 backdrop-blur-[0.5px] opacity-40" />
-                  )}
-
-                  {/* Studio Backdrop Vignette */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-black/20 pointer-events-none" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-black/30 pointer-events-none" />
                 </>
               )}
 
-              {/* Live Status Badge */}
-              <div className="absolute bottom-6 left-6 right-6 flex items-center justify-between pointer-events-none">
-                <div className="bg-black/60 backdrop-blur-md px-4 py-3 rounded-2xl border border-white/10">
-                  <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-1">
-                    {viewMode === '3d' ? '3D REAL-TIME CANVAS' : 'STUDIO SPECIFICATION'}
+              {/* Bottom Canvas Overlay Info */}
+              <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none">
+                <div className="bg-black/60 backdrop-blur-md p-4 rounded-2xl border border-white/10">
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold block">
+                    {media.brand} // {media.category}
                   </span>
                   <h3 className="font-syne font-bold text-xl sm:text-2xl text-white">
                     {media.name}
@@ -290,16 +305,43 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                 {isAuditioning && (
                   <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-amber-400 text-black font-mono text-xs font-bold animate-bounce shadow-xl">
                     <Flame className="w-4 h-4 fill-black" />
-                    <span>REV ACOUSTICS ACTIVE</span>
+                    <span>ACOUSTICS AUDITION ACTIVE</span>
                   </div>
                 )}
               </div>
             </div>
 
-            {/* Quick Helper Notice */}
-            <div className="flex items-center justify-between text-xs font-mono text-neutral-400 px-2">
-              <span>{viewMode === '3d' ? 'Full Interactive Orbit • Real-time Materials' : 'Dynamic Photographic Glaze • Real Acoustic Filtering'}</span>
-              <span className="text-amber-400 font-bold">{engine.powerHp} HP • {engine.type}</span>
+            {/* Dyno Performance Metrics Banner */}
+            <div className="p-4 rounded-2xl bg-neutral-900/60 border border-white/[0.08] grid grid-cols-2 sm:grid-cols-5 gap-3 text-center font-mono text-xs">
+              <div className="p-2 rounded-xl bg-white/[0.02]">
+                <span className="text-[9px] text-neutral-400 uppercase block">TUNED OUTPUT</span>
+                <span className="text-base font-black text-amber-400">{tunedStats.powerHp} HP</span>
+                {tunedStats.powerGain > 0 && (
+                  <span className="text-[9px] text-emerald-400 font-bold block">+{tunedStats.powerGain} HP</span>
+                )}
+              </div>
+              <div className="p-2 rounded-xl bg-white/[0.02]">
+                <span className="text-[9px] text-neutral-400 uppercase block">PEAK TORQUE</span>
+                <span className="text-base font-black text-white">{tunedStats.torqueNm} NM</span>
+                {tunedStats.torqueGain > 0 && (
+                  <span className="text-[9px] text-emerald-400 font-bold block">+{tunedStats.torqueGain} NM</span>
+                )}
+              </div>
+              <div className="p-2 rounded-xl bg-white/[0.02]">
+                <span className="text-[9px] text-neutral-400 uppercase block">0-100 KM/H</span>
+                <span className="text-base font-black text-white">{tunedStats.zeroToHundredSec}s</span>
+                <span className="text-[9px] text-cyan-400 font-bold block">Sprint</span>
+              </div>
+              <div className="p-2 rounded-xl bg-white/[0.02]">
+                <span className="text-[9px] text-neutral-400 uppercase block">TOP VELOCITY</span>
+                <span className="text-base font-black text-white">{tunedStats.topSpeedKmh} KM/H</span>
+                <span className="text-[9px] text-neutral-400 block">V-Max</span>
+              </div>
+              <div className="p-2 rounded-xl bg-white/[0.02]">
+                <span className="text-[9px] text-neutral-400 uppercase block">MASS SAVED</span>
+                <span className="text-base font-black text-purple-400">-{tunedStats.weightSavedKg} KG</span>
+                <span className="text-[9px] text-purple-300 block">{tunedStats.curbWeightKg} kg Total</span>
+              </div>
             </div>
           </div>
 
@@ -308,24 +350,29 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
             {/* Category Navigation Bar */}
             <div className="flex items-center gap-1 p-1 rounded-2xl bg-white/[0.03] border border-white/[0.08] overflow-x-auto scrollbar-none">
               {[
-                { id: 'paint', label: 'PAINT', icon: <Palette className="w-3.5 h-3.5" /> },
-                { id: 'wheels', label: 'WHEELS', icon: <Disc3 className="w-3.5 h-3.5" /> },
-                { id: 'exhaust', label: 'EXHAUST', icon: <Flame className="w-3.5 h-3.5" /> },
-                { id: 'aero', label: 'AERODYNAMICS', icon: <Wind className="w-3.5 h-3.5" /> },
-              ].map((tab) => (
-                <button
-                  key={tab.id}
-                  onClick={() => setActiveTab(tab.id as CustomizerTab)}
-                  className={`flex-1 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
-                    activeTab === tab.id
-                      ? 'bg-white text-black shadow-md'
-                      : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
-                  }`}
-                >
-                  {tab.icon}
-                  <span>{tab.label}</span>
-                </button>
-              ))}
+                { id: 'paint', label: 'PAINT', icon: Palette },
+                { id: 'wheels', label: 'WHEELS', icon: Disc3 },
+                { id: 'aero', label: 'AERO', icon: Wind },
+                { id: 'exhaust', label: 'EXHAUST', icon: Flame },
+                { id: 'performance', label: 'TUNING', icon: Cpu },
+              ].map((tab) => {
+                const Icon = tab.icon;
+                const isSelected = activeTab === tab.id;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id as CustomizerTab)}
+                    className={`flex-1 py-2.5 rounded-xl text-xs font-mono font-bold uppercase tracking-wider flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                      isSelected
+                        ? 'bg-amber-400 text-black shadow-md'
+                        : 'text-neutral-400 hover:text-white hover:bg-white/[0.04]'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{tab.label}</span>
+                  </button>
+                );
+              })}
             </div>
 
             {/* TAB 1: PAINT CUSTOMIZER */}
@@ -371,7 +418,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                               paintName: color.name,
                               paintFinish: color.finish,
                             }));
-                            showToast(`Color selected: ${color.name}`);
+                            showToast(`Color: ${color.name}`);
                           }}
                           className={`p-2.5 rounded-xl border text-left transition-all cursor-pointer flex flex-col gap-2 ${
                             isSelected
@@ -392,6 +439,24 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                       );
                     })}
                   </div>
+                </div>
+
+                {/* Window Tint Slider */}
+                <div>
+                  <div className="flex items-center justify-between text-xs font-mono mb-2">
+                    <span className="text-neutral-400 uppercase tracking-wider">WINDOW CERAMIC TINT</span>
+                    <span className="text-amber-400 font-bold">{Math.round(config.windowTint * 100)}% OPACITY</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="10"
+                    max="90"
+                    value={Math.round(config.windowTint * 100)}
+                    onChange={(e) =>
+                      onChangeConfig((p) => ({ ...p, windowTint: Number(e.target.value) / 100 }))
+                    }
+                    className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+                  />
                 </div>
               </div>
             )}
@@ -474,7 +539,103 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
               </div>
             )}
 
-            {/* TAB 3: EXHAUST SYSTEM & ACOUSTIC MODULATION */}
+            {/* TAB 3: AERODYNAMICS */}
+            {activeTab === 'aero' && (
+              <div className="space-y-4 p-6 rounded-3xl bg-neutral-900/50 border border-white/[0.08] animate-fadeIn">
+                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold block mb-2">
+                  MOTORSPORT DOWNFORCE & SPOILERS
+                </span>
+
+                <div className="space-y-3">
+                  {/* Spoiler Style */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] space-y-2">
+                    <span className="text-xs font-mono font-bold text-white uppercase block">
+                      AERODYNAMIC REAR WING
+                    </span>
+                    <div className="grid grid-cols-4 gap-2 font-mono text-xs">
+                      {(['gt-wing', 'ducktail', 'lip', 'none'] as const).map((style) => (
+                        <button
+                          key={style}
+                          onClick={() =>
+                            onChangeConfig((p) => ({
+                              ...p,
+                              aero: { ...p.aero, spoilerStyle: style },
+                            }))
+                          }
+                          className={`py-2 rounded-xl uppercase font-bold tracking-wider border transition-all cursor-pointer ${
+                            config.aero.spoilerStyle === style
+                              ? 'bg-amber-400 text-black border-amber-400'
+                              : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {style}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Carbon Fiber Splitter */}
+                  <div
+                    onClick={() =>
+                      onChangeConfig((p) => ({
+                        ...p,
+                        aero: { ...p.aero, frontSplitter: !p.aero.frontSplitter },
+                      }))
+                    }
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-between cursor-pointer hover:border-white/20"
+                  >
+                    <div>
+                      <span className="text-sm font-syne font-bold text-white block">
+                        Carbon Fiber Front Splitter
+                      </span>
+                      <span className="text-xs text-neutral-400 font-sans">
+                        Channels high-velocity underbody airflow to generate 180kg frontal downforce.
+                      </span>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                        config.aero.frontSplitter
+                          ? 'bg-amber-400 border-amber-400 text-black'
+                          : 'border-white/20'
+                      }`}
+                    >
+                      {config.aero.frontSplitter && <Check className="w-3.5 h-3.5" />}
+                    </div>
+                  </div>
+
+                  {/* Rear Diffuser */}
+                  <div
+                    onClick={() =>
+                      onChangeConfig((p) => ({
+                        ...p,
+                        aero: { ...p.aero, rearDiffuserFins: !p.aero.rearDiffuserFins },
+                      }))
+                    }
+                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-between cursor-pointer hover:border-white/20"
+                  >
+                    <div>
+                      <span className="text-sm font-syne font-bold text-white block">
+                        Extended Venturi Diffuser Fins
+                      </span>
+                      <span className="text-xs text-neutral-400 font-sans">
+                        Accelerates underfloor air expansion for rear ground-effect suction.
+                      </span>
+                    </div>
+                    <div
+                      className={`w-5 h-5 rounded-md border flex items-center justify-center ${
+                        config.aero.rearDiffuserFins
+                          ? 'bg-amber-400 border-amber-400 text-black'
+                          : 'border-white/20'
+                      }`}
+                    >
+                      {config.aero.rearDiffuserFins && <Check className="w-3.5 h-3.5" />}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* TAB 4: EXHAUST SYSTEM */}
             {activeTab === 'exhaust' && (
               <div className="space-y-4 p-6 rounded-3xl bg-neutral-900/50 border border-white/[0.08] animate-fadeIn">
                 <div>
@@ -482,7 +643,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
                     EXHAUST LAB // DIRECT ACOUSTIC TRANSFORMATION
                   </span>
                   <p className="text-xs text-neutral-400 font-sans">
-                    Choosing an exhaust configuration modulates the acoustic frequency filters and resonance in real-time.
+                    Choosing an exhaust configuration modulates acoustic frequency filters, backpressure, and overrun resonance.
                   </p>
                 </div>
 
@@ -516,68 +677,149 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
               </div>
             )}
 
-            {/* TAB 4: AERODYNAMICS */}
-            {activeTab === 'aero' && (
+            {/* TAB 5: MECHANICAL PERFORMANCE TUNING */}
+            {activeTab === 'performance' && (
               <div className="space-y-4 p-6 rounded-3xl bg-neutral-900/50 border border-white/[0.08] animate-fadeIn">
-                <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold block mb-2">
-                  MOTORSPORT DOWNFORCE PACKAGE
-                </span>
+                <div>
+                  <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-amber-400 font-bold block mb-1">
+                    PERFORMANCE ENGINEERING & SIMULATION PARAMETERS
+                  </span>
+                  <p className="text-xs text-neutral-400 font-sans">
+                    Stages directly modulate the 3D physics engine powertrain model, tire friction circle, and suspension dynamics.
+                  </p>
+                </div>
 
-                <div className="space-y-3">
-                  <div
-                    onClick={() =>
-                      onChangeConfig((p) => ({
-                        ...p,
-                        aero: { ...p.aero, frontSplitter: !p.aero.frontSplitter },
-                      }))
-                    }
-                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-between cursor-pointer hover:border-white/20"
-                  >
-                    <div>
-                      <span className="text-sm font-syne font-bold text-white block">
-                        Carbon Fiber Front Splitter
-                      </span>
-                      <span className="text-xs text-neutral-400 font-sans">
-                        Channels high-velocity underbody airflow to generate 180kg frontal downforce.
-                      </span>
+                <div className="space-y-4">
+                  {/* ECU Calibration */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] space-y-2">
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-white font-bold uppercase">ECU FUEL & IGNITION CALIBRATION</span>
+                      <span className="text-amber-400 font-bold">STAGE {currentTuning.ecuStage}</span>
                     </div>
-                    <div
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                        config.aero.frontSplitter
-                          ? 'bg-amber-400 border-amber-400 text-black'
-                          : 'border-white/20'
-                      }`}
-                    >
-                      {config.aero.frontSplitter && <Check className="w-3.5 h-3.5" />}
+                    <div className="grid grid-cols-4 gap-2 font-mono text-xs">
+                      {[
+                        { stage: 0, label: 'STOCK' },
+                        { stage: 1, label: 'STAGE 1 (+12%)' },
+                        { stage: 2, label: 'STAGE 2 (+25%)' },
+                        { stage: 3, label: 'STAGE 3 (+42%)' },
+                      ].map((s) => (
+                        <button
+                          key={s.stage}
+                          onClick={() => updateTuning((t) => ({ ...t, ecuStage: s.stage as any }))}
+                          className={`py-2 rounded-xl font-bold uppercase tracking-wider border transition-all cursor-pointer text-[10px] ${
+                            currentTuning.ecuStage === s.stage
+                              ? 'bg-amber-400 text-black border-amber-400'
+                              : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
-                  <div
-                    onClick={() =>
-                      onChangeConfig((p) => ({
-                        ...p,
-                        aero: { ...p.aero, rearDiffuserFins: !p.aero.rearDiffuserFins },
-                      }))
-                    }
-                    className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] flex items-center justify-between cursor-pointer hover:border-white/20"
-                  >
-                    <div>
-                      <span className="text-sm font-syne font-bold text-white block">
-                        Extended Venturi Diffuser Fins
-                      </span>
-                      <span className="text-xs text-neutral-400 font-sans">
-                        Accelerates underfloor air expansion for rear ground-effect suction.
-                      </span>
+                  {/* Turbo / Forced Induction */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] space-y-2">
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-white font-bold uppercase">TURBOCHARGER / BOOST STAGE</span>
+                      <span className="text-cyan-400 font-bold">STAGE {currentTuning.turboStage}</span>
                     </div>
-                    <div
-                      className={`w-5 h-5 rounded-md border flex items-center justify-center ${
-                        config.aero.rearDiffuserFins
-                          ? 'bg-amber-400 border-amber-400 text-black'
-                          : 'border-white/20'
+                    <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                      {[
+                        { stage: 0, label: 'FACTORY BOOST' },
+                        { stage: 1, label: 'BALL-BEARING (+15%)' },
+                        { stage: 2, label: 'TWIN RACE (+35%)' },
+                      ].map((s) => (
+                        <button
+                          key={s.stage}
+                          onClick={() => updateTuning((t) => ({ ...t, turboStage: s.stage as any }))}
+                          className={`py-2 rounded-xl font-bold uppercase tracking-wider border transition-all cursor-pointer text-[10px] ${
+                            currentTuning.turboStage === s.stage
+                              ? 'bg-cyan-400 text-black border-cyan-400'
+                              : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Tires & Grip Compound */}
+                  <div className="p-4 rounded-2xl bg-white/[0.02] border border-white/[0.08] space-y-2">
+                    <div className="flex justify-between items-center text-xs font-mono">
+                      <span className="text-white font-bold uppercase">TIRE COMPOUND & TRACTION</span>
+                      <span className="text-emerald-400 font-bold">STAGE {currentTuning.tireStage}</span>
+                    </div>
+                    <div className="grid grid-cols-3 gap-2 font-mono text-xs">
+                      {[
+                        { stage: 0, label: 'STREET SPORT' },
+                        { stage: 1, label: 'SEMI-SLICKS (CUP 2)' },
+                        { stage: 2, label: 'FULL RACING SLICKS' },
+                      ].map((s) => (
+                        <button
+                          key={s.stage}
+                          onClick={() => updateTuning((t) => ({ ...t, tireStage: s.stage as any }))}
+                          className={`py-2 rounded-xl font-bold uppercase tracking-wider border transition-all cursor-pointer text-[10px] ${
+                            currentTuning.tireStage === s.stage
+                              ? 'bg-emerald-400 text-black border-emerald-400'
+                              : 'bg-white/[0.03] border-white/[0.08] text-neutral-400 hover:text-white'
+                          }`}
+                        >
+                          {s.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  {/* Brakes & Suspension */}
+                  <div className="grid grid-cols-2 gap-3">
+                    {/* Brakes */}
+                    <button
+                      onClick={() =>
+                        updateTuning((t) => ({ ...t, brakeStage: (t.brakeStage === 1 ? 0 : 1) as any }))
+                      }
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        currentTuning.brakeStage === 1
+                          ? 'bg-yellow-400/10 border-yellow-400'
+                          : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
                       }`}
                     >
-                      {config.aero.rearDiffuserFins && <Check className="w-3.5 h-3.5" />}
-                    </div>
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-xs font-bold text-white uppercase">
+                          CARBON CERAMIC BRAKES
+                        </span>
+                        {currentTuning.brakeStage === 1 && <Check className="w-4 h-4 text-yellow-400" />}
+                      </div>
+                      <p className="text-[11px] text-neutral-400 font-sans leading-tight">
+                        420mm drilled rotors. -14kg unsprung mass, zero thermal brake fade.
+                      </p>
+                    </button>
+
+                    {/* Suspension */}
+                    <button
+                      onClick={() =>
+                        updateTuning((t) => ({
+                          ...t,
+                          suspensionStage: (t.suspensionStage === 1 ? 0 : 1) as any,
+                        }))
+                      }
+                      className={`p-4 rounded-2xl border text-left transition-all cursor-pointer ${
+                        currentTuning.suspensionStage === 1
+                          ? 'bg-purple-400/10 border-purple-400'
+                          : 'bg-white/[0.02] border-white/[0.08] hover:border-white/20'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="font-mono text-xs font-bold text-white uppercase">
+                          KW CLUBSPORT COILOVERS
+                        </span>
+                        {currentTuning.suspensionStage === 1 && <Check className="w-4 h-4 text-purple-400" />}
+                      </div>
+                      <p className="text-[11px] text-neutral-400 font-sans leading-tight">
+                        -25mm ride height. Stiffer anti-roll bars, reduced body roll in hairpins.
+                      </p>
+                    </button>
                   </div>
                 </div>
               </div>

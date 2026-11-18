@@ -1,5 +1,5 @@
 import React from 'react';
-import { ChevronDown, ArrowRight, Sparkles, Volume2 } from 'lucide-react';
+import { ChevronDown, ArrowRight, Sparkles, Volume2, Flag } from 'lucide-react';
 import { CarModelType } from '../types';
 import { getVehicleMedia } from '../data/vehicleMedia';
 import { getEngineForModel } from '../data/engines';
@@ -8,6 +8,7 @@ interface EditorialHeroProps {
   selectedCar: CarModelType;
   onEnterGarage: () => void;
   onExploreCars: () => void;
+  onEnterRacing: () => void;
   onScrollToStory: () => void;
   onQuickRev?: () => void;
 }
@@ -16,6 +17,7 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({
   selectedCar,
   onEnterGarage,
   onExploreCars,
+  onEnterRacing,
   onScrollToStory,
   onQuickRev,
 }) => {
@@ -56,35 +58,43 @@ export const EditorialHero: React.FC<EditorialHeroProps> = ({
         </span>
 
         <h1 className="font-syne font-black text-4xl sm:text-6xl md:text-8xl lg:text-9xl tracking-tighter uppercase text-white leading-[0.9] text-balance">
-          ENGINEERED
+          BUILT
           <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-white via-neutral-200 to-neutral-400">
             TO BE
           </span>
           <br />
-          <span className="italic text-amber-400">UNCONTROLLED.</span>
+          <span className="italic text-amber-400">DRIVEN.</span>
         </h1>
 
         <p className="mt-4 sm:mt-6 max-w-xl text-xs sm:text-base text-neutral-300 font-sans font-light leading-relaxed">
-          The relentless convergence of naturally aspirated V12 acoustic fury, aerospace carbon fiber
-          architecture, and uncompromising motorsport aerodynamics.
+          The ultimate automotive playground. High-precision vehicle dynamics, individual Web Audio engine acoustics, 
+          and a genuinely playable 3D racing simulator engineered directly in the browser.
         </p>
 
         {/* Primary Hero Actions */}
         <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-3 sm:gap-4">
           <button
-            onClick={onEnterGarage}
+            onClick={onExploreCars}
             className="w-full sm:w-auto justify-center px-8 py-3.5 sm:py-4 rounded-full bg-white text-black hover:bg-neutral-200 font-mono text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-2xl hover:scale-105 flex items-center gap-3 cursor-pointer group"
           >
-            <span>ENTER GARAGE</span>
+            <span>EXPLORE CARS</span>
             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </button>
 
           <button
-            onClick={onExploreCars}
-            className="w-full sm:w-auto justify-center px-8 py-3.5 sm:py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/20 font-mono text-xs font-bold uppercase tracking-widest transition-all duration-300 backdrop-blur-md cursor-pointer hover:border-white/40"
+            onClick={onEnterRacing}
+            className="w-full sm:w-auto justify-center px-8 py-3.5 sm:py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-widest transition-all duration-300 shadow-xl flex items-center gap-2 cursor-pointer hover:scale-105"
           >
-            EXPLORE CARS
+            <Flag className="w-4 h-4" />
+            <span>ENTER RACING</span>
+          </button>
+
+          <button
+            onClick={onEnterGarage}
+            className="w-full sm:w-auto justify-center px-6 py-3.5 sm:py-4 rounded-full bg-white/[0.04] hover:bg-white/[0.08] text-white border border-white/20 font-mono text-xs font-bold uppercase tracking-widest transition-all duration-300 backdrop-blur-md cursor-pointer hover:border-white/40"
+          >
+            GARAGE
           </button>
 
           {onQuickRev && (

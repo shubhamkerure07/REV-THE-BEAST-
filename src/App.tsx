@@ -12,6 +12,8 @@ import { EditorialStoryScroll } from './components/EditorialStoryScroll';
 import { EditorialGarage } from './components/EditorialGarage';
 import { EditorialCarDetail } from './components/EditorialCarDetail';
 import { EditorialCustomizer } from './components/EditorialCustomizer';
+import { EditorialCars } from './components/EditorialCars';
+import { EditorialAbout } from './components/EditorialAbout';
 import { EditorialSoundLab } from './components/EditorialSoundLab';
 import { EditorialAiLab } from './components/EditorialAiLab';
 import { EditorialRacing } from './components/EditorialRacing';
@@ -172,7 +174,11 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onExploreCars={() => {
-                setCurrentView('car-detail');
+                setCurrentView('cars');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onEnterRacing={() => {
+                setCurrentView('racing');
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               onScrollToStory={handleScrollToStory}
@@ -204,7 +210,33 @@ export default function App() {
           </div>
         )}
 
-        {/* VIEW B: EDITORIAL GARAGE */}
+        {/* VIEW B: ULTIMATE CAR COLLECTION CATALOG */}
+        {currentView === 'cars' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialCars
+              selectedCar={config.modelType}
+              onSelectCar={handleSelectCar}
+              onViewDetails={(model) => {
+                handleSelectCar(model);
+                setCurrentView('car-detail');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onCustomize={(model) => {
+                handleSelectCar(model);
+                setCurrentView('customizer');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              onRace={(model) => {
+                handleSelectCar(model);
+                setCurrentView('racing');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              showToast={showToast}
+            />
+          </div>
+        )}
+
+        {/* VIEW C: EDITORIAL GARAGE */}
         {currentView === 'garage' && (
           <div className="w-full pt-20 animate-fade-in">
             <EditorialGarage
@@ -342,6 +374,18 @@ export default function App() {
                 window.scrollTo({ top: 0, behavior: 'smooth' });
               }}
               showToast={showToast}
+            />
+          </div>
+        )}
+
+        {/* VIEW H: ABOUT PLATFORM & MANIFESTO */}
+        {currentView === 'about' && (
+          <div className="w-full pt-20 animate-fade-in">
+            <EditorialAbout
+              onNavigate={(view) => {
+                setCurrentView(view);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
             />
           </div>
         )}

@@ -28,11 +28,27 @@ export interface VehicleMediaData {
   id: CarModelType;
   name: string;
   tagline: string;
-  category: 'Coupé' | 'Muscle' | 'SUV' | 'Hyperbike' | 'Executive Sedan' | 'Supercar' | 'Hypercar' | 'Cafe Racer' | 'Custom Bobber';
+  category:
+    | 'Hypercars'
+    | 'Supercars'
+    | 'Sports Cars'
+    | 'Muscle Cars'
+    | 'JDM'
+    | 'Track Cars'
+    | 'Electric Performance Cars'
+    | 'Coupé'
+    | 'Muscle'
+    | 'SUV'
+    | 'Hyperbike'
+    | 'Executive Sedan'
+    | 'Supercar'
+    | 'Hypercar'
+    | 'Cafe Racer'
+    | 'Custom Bobber';
   brand: string;
   badge: string;
   accentHex: string;
-  photos: Record<CameraPreset, VehiclePhotoAngle>;
+  photos: Partial<Record<CameraPreset, VehiclePhotoAngle>> & { hero: VehiclePhotoAngle };
   videos: VehicleVideoReel[];
   keySpecs: {
     engine: string;
@@ -1178,6 +1194,97 @@ export const VEHICLE_MEDIA_CATALOG: Record<CarModelType, VehicleMediaData> = {
         subtitle: 'Deploys automatically above 200 km/h',
         url: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=1920&q=85',
         thumbnail: 'https://images.unsplash.com/photo-1617788138017-80ad40651399?auto=format&fit=crop&w=300&q=75',
+      },
+    },
+    videos: [],
+  },
+
+  'nissan-gtr-r35': {
+    id: 'nissan-gtr-r35',
+    name: 'Nissan GT-R Nismo (R35)',
+    tagline: 'The Legendary Japanese Godzilla of the Circuit',
+    category: 'JDM',
+    brand: 'Nissan Nismo',
+    badge: 'NISMO VR38',
+    accentHex: '#ef4444',
+    keySpecs: {
+      engine: '3.8L VR38DETT Twin-Turbocharged V6',
+      horsepower: '600 HP @ 6,800 RPM',
+      torque: '652 Nm @ 3,600 RPM',
+      zeroToSixty: '2.7 sec',
+      topSpeed: '330 km/h (205 mph)',
+      soundType: 'Twin-turbocharged VR38DETT high-frequency metallic roar with wastegate chatter',
+    },
+    photos: {
+      hero: {
+        id: 'hero',
+        title: 'Godzilla at Midnight',
+        subtitle: 'Brembo carbon-ceramic brakes and dry carbon rear wing',
+        url: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=300&q=75',
+      },
+      front: {
+        id: 'front',
+        title: 'Nismo Carbon V-Motion Aero Fascia',
+        subtitle: 'Canard dive planes generating 100kg frontal downforce',
+        url: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1618843479313-40f8afb4b4d8?auto=format&fit=crop&w=300&q=75',
+      },
+      side: {
+        id: 'side',
+        title: 'Sculpted Profile & RAYS Forged Wheels',
+        subtitle: '20-inch 9-spoke super-lightweight Nismo alloy wheels',
+        url: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1617814076367-b759c7d7e738?auto=format&fit=crop&w=300&q=75',
+      },
+      rear: {
+        id: 'rear',
+        title: 'Quad Afterburner Taillights',
+        subtitle: 'Iconic round signature LED taillights with titanium quad tips',
+        url: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=300&q=75',
+      },
+      top: {
+        id: 'top',
+        title: 'Bonded Carbon Fiber Roof Panel',
+        subtitle: 'Lowers center of gravity by 10mm for instant turn-in response',
+        url: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=300&q=75',
+      },
+      interior: {
+        id: 'interior',
+        title: 'Recaro Carbon Shell Bucket Cockpit',
+        subtitle: 'Alcantara-wrapped steering wheel and red leather accents',
+        url: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&w=300&q=75',
+      },
+      engine: {
+        id: 'engine',
+        title: 'Handcrafted Takumi VR38DETT Engine',
+        subtitle: 'Assembled in a hermetically sealed cleanroom in Yokohama',
+        url: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1486006920555-c77dce18193b?auto=format&fit=crop&w=300&q=75',
+      },
+      wheel: {
+        id: 'wheel',
+        title: 'Nismo RAYS 20-inch Forged Alloy',
+        subtitle: 'Dunlop SP Sport Maxx GT600 high-grip compound',
+        url: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1583121274602-3e2820c69888?auto=format&fit=crop&w=300&q=75',
+      },
+      exhaust: {
+        id: 'exhaust',
+        title: 'Fujitsubo Titanium Quad Exhaust System',
+        subtitle: 'Burnt rainbow blue tips with active acoustic flapper valves',
+        url: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=300&q=75',
+      },
+      detail: {
+        id: 'detail',
+        title: 'Dry Carbon Rear Wing & Vortex Generators',
+        subtitle: 'Race-spec aerodynamic balance calibrated on the Nürburgring',
+        url: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=1920&q=85',
+        thumbnail: 'https://images.unsplash.com/photo-1597687210367-a4915552d890?auto=format&fit=crop&w=300&q=75',
       },
     },
     videos: [],

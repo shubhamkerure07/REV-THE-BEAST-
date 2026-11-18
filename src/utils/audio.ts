@@ -267,6 +267,30 @@ export const ACOUSTIC_PROFILES: Record<EngineSoundProfile, ProfileAcousticConfig
     soundDescription: 'Futuristic IGBT 12kHz inverter carrier switching tone, planetary reduction gear whine, and regenerative magnetic deceleration hum.',
   },
 
+  // Nissan 3.8L VR38DETT Twin-Turbo V6 (Nismo Godzilla)
+  'vr38-twin-turbo': {
+    name: 'Nissan 3.8L VR38DETT Twin-Turbo V6',
+    cylinders: 6,
+    idleRpm: 750,
+    redlineRpm: 7200,
+    firingPattern: [0.0, 0.1667, 0.3333, 0.5, 0.6667, 0.8333],
+    fundamentalOrder: 3.0,
+    subHarmonicFactor: 1.2,
+    combustionSharpness: 3.6,
+    headerResonanceFreq: 180,
+    tailpipeResonanceFreq: 1320,
+    metallicRaspGain: 0.70,
+    intakeRoarFreq: 410,
+    hasForcedInduction: true,
+    forcedInductionType: 'turbo',
+    forcedInductionPitchRatio: 1.9,
+    hasSuperchargerWhine: false,
+    maxBoostPsi: 21.8,
+    spoolRate: 3.4,
+    gainMultiplier: 0.94,
+    soundDescription: 'Aggressive Japanese 3.8L Twin-Turbo V6 metallic bark with rapid IHI turbo spool and crackling overrun on decel.',
+  },
+
   // Royal Enfield Continental GT 650: 270° Parallel Twin -> deep rhythmic British twin thumping
   'parallel-twin-270': {
     name: 'Royal Enfield 648cc Parallel Twin 270°',
@@ -388,6 +412,14 @@ export class RealisticEngineSynthesizer {
   private launchLimiterBounce: boolean = false;
   private isColdStarting: boolean = false;
   private turboBovStyle: TurboBovStyle = 'wrc-flutter';
+
+  // Master and Channel Volumes
+  private masterVolume: number = 0.85;
+  private engineVolume: number = 0.90;
+  private exhaustVolume: number = 0.95;
+  private tireVolume: number = 0.80;
+  private windVolume: number = 0.70;
+  private isMuted: boolean = false;
 
   // Callbacks
   private onRpmCallbacks: Set<(rpm: number) => void> = new Set();
@@ -940,6 +972,39 @@ export class RealisticEngineSynthesizer {
     this.triggerColdStart(onComplete);
   }
 
+  public playShutdown(onComplete?: () => void) {
+    if (!this.isRunning || !this.ctx) {
+      onComplete?.();
+      return;
+    }
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    
+    // Taper throttle and spin down target RPM
+    this.targetRpm = 0;
+    this.setThrottle(0);
+    
+    // Low frequency decompression chuff
+    const chuffOsc = ctx.createOscillator();
+    chuffOsc.type = 'sawtooth';
+    chuffOsc.frequency.setValueAtTime(45, now);
+    chuffOsc.frequency.exponentialRampToValueAtTime(10, now + 0.85);
+    
+    const chuffGain = ctx.createGain();
+    chuffGain.gain.setValueAtTime(0.25 * (this.isMuted ? 0 : this.masterVolume), now);
+    chuffGain.gain.exponentialRampToValueAtTime(0.001, now + 0.85);
+    
+    chuffOsc.connect(chuffGain);
+    chuffGain.connect(this.masterGain || ctx.destination);
+    chuffOsc.start(now);
+    chuffOsc.stop(now + 0.85);
+
+    setTimeout(() => {
+      this.stop();
+      onComplete?.();
+    }, 900);
+  }
+
   public toggleLaunchControl(active?: boolean): boolean {
     const cfg = ACOUSTIC_PROFILES[this.profile];
     if (cfg.isElectric) return false;
@@ -1123,6 +1188,221 @@ export class RealisticEngineSynthesizer {
 
   public playThrottleBlip() {
     this.triggerThrottleBlip();
+  }
+
+  // -------------------------------------------------------------------------
+  // VOLUME CHANNEL CONTROLS
+  // -------------------------------------------------------------------------
+
+  public setMasterVolume(v: number) {
+    this.masterVolume = Math.max(0, Math.min(1, v));
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.masterVolume, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  public setEngineVolume(v: number) {
+    this.engineVolume = Math.max(0, Math.min(1, v));
+  }
+
+  public setExhaustVolume(v: number) {
+    this.exhaustVolume = Math.max(0, Math.min(1, v));
+    if (this.valveGain && this.ctx) {
+      const modeMul = this.valveMode === 'quiet' ? 0.35 : this.valveMode === 'track' ? 1.45 : 1.0;
+      this.valveGain.gain.setTargetAtTime(this.exhaustVolume * modeMul, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  public setTireVolume(v: number) {
+    this.tireVolume = Math.max(0, Math.min(1, v));
+  }
+
+  public setWindVolume(v: number) {
+    this.windVolume = Math.max(0, Math.min(1, v));
+  }
+
+  public setMuted(muted: boolean) {
+    this.isMuted = muted;
+    if (this.masterGain && this.ctx) {
+      this.masterGain.gain.setTargetAtTime(this.isMuted ? 0 : this.masterVolume, this.ctx.currentTime, 0.05);
+    }
+  }
+
+  public getVolumes() {
+    return {
+      master: this.masterVolume,
+      engine: this.engineVolume,
+      exhaust: this.exhaustVolume,
+      tire: this.tireVolume,
+      wind: this.windVolume,
+      isMuted: this.isMuted,
+    };
+  }
+
+  // -------------------------------------------------------------------------
+  // PHYSICAL ENVIRONMENTAL ACOUSTICS (Tires, Wind, Collision, Signals)
+  // -------------------------------------------------------------------------
+
+  public playTireScreech(intensity: number = 0.5) {
+    this.initAudioContext();
+    if (!this.ctx || intensity <= 0.05) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    const duration = 0.28;
+
+    const bLen = Math.floor(ctx.sampleRate * duration);
+    const nBuf = ctx.createBuffer(1, bLen, ctx.sampleRate);
+    const data = nBuf.getChannelData(0);
+    for (let i = 0; i < bLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.4;
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = nBuf;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'bandpass';
+    filter.frequency.setValueAtTime(950 + Math.random() * 300, now);
+    filter.Q.setValueAtTime(4.5, now);
+
+    const gain = ctx.createGain();
+    const clampedIntensity = Math.min(1.0, Math.max(0.1, intensity));
+    gain.gain.setValueAtTime(clampedIntensity * 0.35 * (this.isMuted ? 0 : this.tireVolume), now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + duration);
+  }
+
+  public playWindRush(speedKmh: number) {
+    this.initAudioContext();
+    if (!this.ctx || speedKmh < 40) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    const duration = 0.2;
+
+    const bLen = Math.floor(ctx.sampleRate * duration);
+    const nBuf = ctx.createBuffer(1, bLen, ctx.sampleRate);
+    const data = nBuf.getChannelData(0);
+    for (let i = 0; i < bLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.25;
+    }
+
+    const src = ctx.createBufferSource();
+    src.buffer = nBuf;
+
+    const filter = ctx.createBiquadFilter();
+    filter.type = 'lowpass';
+    const cutoff = Math.min(2200, 300 + (speedKmh / 350) * 1800);
+    filter.frequency.setValueAtTime(cutoff, now);
+
+    const gain = ctx.createGain();
+    const speedRatio = Math.min(1.0, speedKmh / 380);
+    const vol = Math.pow(speedRatio, 1.6) * 0.22 * (this.isMuted ? 0 : this.windVolume);
+    gain.gain.setValueAtTime(vol, now);
+    gain.gain.linearRampToValueAtTime(vol * 0.8, now + duration);
+
+    src.connect(filter);
+    filter.connect(gain);
+    gain.connect(ctx.destination);
+
+    src.start(now);
+    src.stop(now + duration);
+  }
+
+  public playCollisionSound(impactForce: number = 1.0) {
+    this.initAudioContext();
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+
+    // Sub-bass impact thud
+    const subOsc = ctx.createOscillator();
+    subOsc.type = 'triangle';
+    subOsc.frequency.setValueAtTime(90, now);
+    subOsc.frequency.exponentialRampToValueAtTime(25, now + 0.35);
+
+    const subGain = ctx.createGain();
+    const clampedForce = Math.min(1.5, Math.max(0.2, impactForce));
+    subGain.gain.setValueAtTime(clampedForce * 0.6 * (this.isMuted ? 0 : this.masterVolume), now);
+    subGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+
+    subOsc.connect(subGain);
+    subGain.connect(ctx.destination);
+    subOsc.start(now);
+    subOsc.stop(now + 0.4);
+
+    // Crunch metal scrape burst
+    const bLen = Math.floor(ctx.sampleRate * 0.25);
+    const nBuf = ctx.createBuffer(1, bLen, ctx.sampleRate);
+    const data = nBuf.getChannelData(0);
+    for (let i = 0; i < bLen; i++) {
+      data[i] = (Math.random() * 2 - 1) * 0.3;
+    }
+    const cSrc = ctx.createBufferSource();
+    cSrc.buffer = nBuf;
+    const cFilter = ctx.createBiquadFilter();
+    cFilter.type = 'highpass';
+    cFilter.frequency.setValueAtTime(1400, now);
+    const cGain = ctx.createGain();
+    cGain.gain.setValueAtTime(clampedForce * 0.3 * (this.isMuted ? 0 : this.masterVolume), now);
+    cGain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+
+    cSrc.connect(cFilter);
+    cFilter.connect(cGain);
+    cGain.connect(ctx.destination);
+    cSrc.start(now);
+    cSrc.stop(now + 0.25);
+  }
+
+  public playCountdownBeep(isFinal: boolean = false) {
+    this.initAudioContext();
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+    const freq = isFinal ? 1760 : 880;
+    const duration = isFinal ? 0.45 : 0.22;
+
+    const osc = ctx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(freq, now);
+
+    const gain = ctx.createGain();
+    gain.gain.setValueAtTime(0.35 * (this.isMuted ? 0 : this.masterVolume), now);
+    gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+    osc.start(now);
+    osc.stop(now + duration);
+  }
+
+  public playCheckeredFlagFanfare() {
+    this.initAudioContext();
+    if (!this.ctx) return;
+    const ctx = this.ctx;
+    const now = ctx.currentTime;
+
+    const notes = [523.25, 659.25, 783.99, 1046.5]; // C5, E5, G5, C6
+    notes.forEach((freq, idx) => {
+      const startTime = now + idx * 0.12;
+      const osc = ctx.createOscillator();
+      osc.type = 'triangle';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      const gain = ctx.createGain();
+      gain.gain.setValueAtTime(0.3 * (this.isMuted ? 0 : this.masterVolume), startTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + 0.6);
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(startTime);
+      osc.stop(startTime + 0.6);
+    });
   }
 
   private startPhysicsLoop() {

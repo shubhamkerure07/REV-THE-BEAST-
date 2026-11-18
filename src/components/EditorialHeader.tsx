@@ -12,11 +12,11 @@ import {
   X,
   Compass,
 } from 'lucide-react';
-import { CarModelType } from '../types';
+import { CarModelType, AppView } from '../types';
 import { getVehicleMedia } from '../data/vehicleMedia';
 import { AnimatedAudioBarsIcon } from './AnimatedIcons';
 
-export type AppView = 'home' | 'garage' | 'car-detail' | 'customizer' | 'sound-lab' | 'ai-lab' | 'racing';
+export type { AppView };
 
 interface EditorialHeaderProps {
   currentView: AppView;
@@ -39,12 +39,12 @@ export const EditorialHeader: React.FC<EditorialHeaderProps> = ({
   const media = getVehicleMedia(selectedCar);
 
   const navItems: { id: AppView; label: string; icon: React.ReactNode }[] = [
-    { id: 'home', label: 'EDITORIAL', icon: <Compass className="w-3.5 h-3.5" /> },
-    { id: 'garage', label: 'GARAGE', icon: <Car className="w-3.5 h-3.5" /> },
-    { id: 'customizer', label: 'CUSTOMIZE', icon: <Sliders className="w-3.5 h-3.5" /> },
-    { id: 'sound-lab', label: 'SOUND LAB', icon: <Activity className="w-3.5 h-3.5" /> },
-    { id: 'ai-lab', label: 'BEAST AI', icon: <Sparkles className="w-3.5 h-3.5" /> },
-    { id: 'racing', label: 'CIRCUIT', icon: <Flag className="w-3.5 h-3.5" /> },
+    { id: 'home', label: 'HOME', icon: <Compass className="w-3.5 h-3.5" /> },
+    { id: 'cars', label: 'CARS', icon: <Car className="w-3.5 h-3.5" /> },
+    { id: 'racing', label: 'RACING', icon: <Flag className="w-3.5 h-3.5" /> },
+    { id: 'garage', label: 'GARAGE', icon: <Activity className="w-3.5 h-3.5" /> },
+    { id: 'customizer', label: 'CUSTOMIZATION', icon: <Sliders className="w-3.5 h-3.5" /> },
+    { id: 'about', label: 'ABOUT', icon: <Sparkles className="w-3.5 h-3.5" /> },
   ];
 
   return (

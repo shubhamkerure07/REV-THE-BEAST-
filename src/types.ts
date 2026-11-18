@@ -64,6 +64,30 @@ export type CameraPreset =
   | 'exhaust'
   | 'detail';
 
+export type AppView =
+  | 'home'
+  | 'cars'
+  | 'racing'
+  | 'garage'
+  | 'customizer'
+  | 'about'
+  | 'car-detail'
+  | 'sound-lab'
+  | 'ai-lab';
+
+export type GraphicsQuality = 'low' | 'medium' | 'high';
+
+export type RacingGameMode = 'quick-race' | 'time-trial' | 'drag' | 'free-drive';
+
+export interface TuningStageConfig {
+  ecuStage: 0 | 1 | 2 | 3;
+  turboStage: 0 | 1 | 2;
+  exhaustStage: 0 | 1 | 2;
+  tireStage: 0 | 1 | 2;
+  brakeStage: 0 | 1;
+  suspensionStage: 0 | 1;
+}
+
 export type CarModelType =
   | 'lambo-aventador'
   | 'procedural-m4'
@@ -75,6 +99,7 @@ export type CarModelType =
   | 'gwagon-g63'
   | 'ninja-h2r'
   | 'bmw-5series'
+  | 'nissan-gtr-r35'
   | 'beast-ev'
   | 'beast-v12-ai';
 
@@ -89,6 +114,7 @@ export type EngineSoundProfile =
   | 'custom-bobber-twin'
   | 'v10-exotic'
   | 'v12-symphony'
+  | 'vr38-twin-turbo'
   | 'electric-motor';
 
 export type ExhaustValveMode = 'quiet' | 'sport' | 'track';
@@ -161,6 +187,7 @@ export interface CarConfigState {
   transmissionMode?: TransmissionMode;
   turboBovStyle?: TurboBovStyle;
   gearPosition?: GearPosition;
+  tuning?: TuningStageConfig;
 }
 
 export interface CarSpecification {

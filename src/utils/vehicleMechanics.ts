@@ -372,6 +372,33 @@ export const VEHICLE_PHYSICS_PROFILES: Record<CarModelType, VehiclePhysicsProfil
     maxTorqueNm: 2360,
     officialTopSpeedKmh: 412,
   },
+
+  'nissan-gtr-r35': {
+    name: 'Nissan GT-R Nismo (R35)',
+    curbWeightKg: 1720,
+    dragCoefficient: 0.26,
+    frontalAreaM2: 2.22,
+    rollingResistanceCoeff: 0.012,
+    driveType: 'AWD',
+    tireWidthMm: 285,
+    tireAspectRatio: 35,
+    rimDiameterInches: 20,
+    rollingCircumferenceM: calculateTireCircumference(285, 35, 20),
+    finalDriveRatio: 3.70,
+    gearRatios: {
+      1: 4.056,
+      2: 2.301,
+      3: 1.595,
+      4: 1.248,
+      5: 1.001,
+      6: 0.796,
+    },
+    redlineRpm: 7200,
+    idleRpm: 750,
+    maxPowerHp: 600,
+    maxTorqueNm: 652,
+    officialTopSpeedKmh: 330,
+  },
 };
 
 export interface RealSpeedCalculation {
@@ -478,5 +505,129 @@ export function calculateRealVehicleSpeed(
     dragForceNewtons: dragForce,
     gForceLongitudinal: Math.max(-1.2, Math.min(1.8, gForce)),
     isGearDecoupled: false,
+  };
+}
+
+/**
+ * Computes modified physics profile taking into account performance tuning stages:
+ * - ECU stage: boost power, torque, and redline
+ * - Turbo stage: boost mid-to-high RPM power and torque
+ * - Exhaust stage: reduces backpressure, increases power, sheds curb weight
+ * - Tire stage: improves tire grip and reduces rolling resistance
+ * - Brake stage: enhances deceleration Gs, reduces unsprung mass
+ * - Suspension stage: improves cornering stability and aero drag profile
+ */
+export function getVehiclePhysicsWithTuning(
+  modelType: CarModelType,
+  tuning?: import('../types').TuningStageConfig
+): VehiclePhysicsProfile {
+  const base = VEHICLE_PHYSICS_PROFILES[modelType] || VEHICLE_PHYSICS_PROFILES['procedural-m4'];
+  if (!tuning) return base;
+
+  let powerMult = 1.0;
+  let torqueMult = 1.0;
+  let redlineBonus = 0;
+  let weightReduction = 0;
+  let dragMod = 1.0;
+
+  // 1. ECU Stage
+  if (tuning.ecuStage === 1) {
+    powerMult += 0.12;
+    torqueMult += 0.15;
+  } else if (tuning.ecuStage === 2) {
+    powerMult += 0.25;
+    torqueMult += 0.28;
+    redlineBonus += 250;
+  } else if (tuning.ecuStage === 3) {
+    powerMult += 0.42;
+    torqueMult += 0.45;
+    redlineBonus += 500;
+  }
+
+  // 2. Turbo Stage
+  if (tuning.turboStage === 1) {
+    powerMult += 0.15;
+    torqueMult += 0.18;
+  } else if (tuning.turboStage === 2) {
+    powerMult += 0.35;
+    torqueMult += 0.32;
+  }
+
+  // 3. Exhaust Stage
+  if (tuning.exhaustStage === 1) {
+    powerMult += 0.05;
+    torqueMult += 0.04;
+    weightReduction += 8;
+  } else if (tuning.exhaustStage === 2) {
+    powerMult += 0.10;
+    torqueMult += 0.08;
+    weightReduction += 18;
+  }
+
+  // 4. Tire Stage
+  let rollCoeff = base.rollingResistanceCoeff;
+  if (tuning.tireStage === 1) {
+    rollCoeff *= 0.92;
+  } else if (tuning.tireStage === 2) {
+    rollCoeff *= 0.85;
+  }
+
+  // 5. Brake Stage (Carbon ceramic saves unsprung mass)
+  if (tuning.brakeStage === 1) {
+    weightReduction += 14;
+  }
+
+  // 6. Suspension Stage (Lower ride height improves aero Cd)
+  if (tuning.suspensionStage === 1) {
+    dragMod = 0.96;
+    weightReduction += 4;
+  }
+
+  const tunedHp = Math.round(base.maxPowerHp * powerMult);
+  const tunedTorque = Math.round(base.maxTorqueNm * torqueMult);
+  const tunedWeight = Math.max(900, base.curbWeightKg - weightReduction);
+
+  // Speed estimation formula based on aerodynamic power balance
+  const topSpeedBoost = Math.round(Math.pow(powerMult, 0.33) * base.officialTopSpeedKmh) - base.officialTopSpeedKmh;
+
+  return {
+    ...base,
+    maxPowerHp: tunedHp,
+    maxTorqueNm: tunedTorque,
+    redlineRpm: base.redlineRpm + redlineBonus,
+    curbWeightKg: tunedWeight,
+    dragCoefficient: Number((base.dragCoefficient * dragMod).toFixed(3)),
+    rollingResistanceCoeff: Number(rollCoeff.toFixed(4)),
+    officialTopSpeedKmh: base.officialTopSpeedKmh + Math.max(0, topSpeedBoost),
+  };
+}
+
+export function getTunedPerformanceStats(
+  modelType: CarModelType,
+  tuning?: import('../types').TuningStageConfig
+) {
+  const tuned = getVehiclePhysicsWithTuning(modelType, tuning);
+  const base = VEHICLE_PHYSICS_PROFILES[modelType] || VEHICLE_PHYSICS_PROFILES['procedural-m4'];
+
+  // 0-100 acceleration estimation: t_acc ~ C * (mass / power)^0.65
+  const base0100 = 3.2; // nominal baseline
+  const powerToWeightRatio = (tuned.maxPowerHp / tuned.curbWeightKg) * 1000;
+  const baseRatio = (base.maxPowerHp / base.curbWeightKg) * 1000;
+  const ratioMult = baseRatio / Math.max(1, powerToWeightRatio);
+  const tireGripBonus = tuning?.tireStage === 2 ? 0.35 : tuning?.tireStage === 1 ? 0.18 : 0;
+  
+  // Estimate 0-100 in seconds
+  const estimated0100 = Math.max(1.8, Number((3.0 * Math.pow(ratioMult, 0.7) - tireGripBonus).toFixed(2)));
+
+  return {
+    powerHp: tuned.maxPowerHp,
+    torqueNm: tuned.maxTorqueNm,
+    redlineRpm: tuned.redlineRpm,
+    curbWeightKg: tuned.curbWeightKg,
+    topSpeedKmh: tuned.officialTopSpeedKmh,
+    zeroToHundredSec: estimated0100,
+    powerGain: tuned.maxPowerHp - base.maxPowerHp,
+    torqueGain: tuned.maxTorqueNm - base.maxTorqueNm,
+    weightSavedKg: base.curbWeightKg - tuned.curbWeightKg,
   };
 }

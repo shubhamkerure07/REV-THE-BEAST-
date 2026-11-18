@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Volume2, VolumeX, Sliders, X, Sparkles, Wind, Disc, Zap } from 'lucide-react';
+import { Volume2, VolumeX, Sliders, X, Sparkles, Wind, Disc, Zap, Activity } from 'lucide-react';
 import { engineSound, AcousticEnvironment } from '../utils/audio';
 import { ambienceSound } from '../utils/ambienceAudio';
 import { ExhaustValveMode } from '../types';
@@ -15,8 +15,13 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
   onClose,
   showToast,
 }) => {
+  const [masterVolume, setMasterVolume] = useState<number>(100);
   const [engineVolume, setEngineVolume] = useState<number>(85);
+  const [exhaustVolume, setExhaustVolume] = useState<number>(90);
+  const [tireVolume, setTireVolume] = useState<number>(80);
+  const [windVolume, setWindVolume] = useState<number>(70);
   const [ambienceVolume, setAmbienceVolume] = useState<number>(45);
+
   const [acousticEnv, setAcousticEnv] = useState<AcousticEnvironment>('studio');
   const [valveMode, setValveMode] = useState<ExhaustValveMode>('sport');
   const [isAmbiencePlaying, setIsAmbiencePlaying] = useState<boolean>(true);
@@ -24,12 +29,37 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
 
   useEffect(() => {
     if (isOpen) {
-      // sync current states
       setValveMode(engineSound.getValveMode());
     }
   }, [isOpen]);
 
   if (!isOpen) return null;
+
+  const handleMasterChange = (val: number) => {
+    setMasterVolume(val);
+    engineSound.setMasterVolume(val / 100);
+    ambienceSound.setVolume((ambienceVolume / 100) * (val / 100));
+  };
+
+  const handleEngineGainChange = (val: number) => {
+    setEngineVolume(val);
+    engineSound.setEngineVolume(val / 100);
+  };
+
+  const handleExhaustGainChange = (val: number) => {
+    setExhaustVolume(val);
+    engineSound.setExhaustVolume(val / 100);
+  };
+
+  const handleTireGainChange = (val: number) => {
+    setTireVolume(val);
+    engineSound.setTireVolume(val / 100);
+  };
+
+  const handleWindGainChange = (val: number) => {
+    setWindVolume(val);
+    engineSound.setWindVolume(val / 100);
+  };
 
   const handleAcousticEnvChange = (env: AcousticEnvironment) => {
     setAcousticEnv(env);
@@ -58,12 +88,13 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
   const toggleMasterMute = () => {
     if (isMuted) {
       setIsMuted(false);
-      ambienceSound.setVolume(ambienceVolume / 100);
+      engineSound.setMuted(false);
+      ambienceSound.setVolume((ambienceVolume / 100) * (masterVolume / 100));
       showToast('AUDIO UNMUTED');
     } else {
       setIsMuted(true);
+      engineSound.setMuted(true);
       ambienceSound.setVolume(0);
-      engineSound.stop();
       showToast('MASTER AUDIO MUTED');
     }
   };
@@ -82,7 +113,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                 MASTER ACOUSTIC CONSOLE
               </div>
               <h2 className="text-xl sm:text-2xl font-black font-syne tracking-tight">
-                AUDIO MASTERING & REVERB
+                AUDIO MASTERING & ACOUSTICS
               </h2>
             </div>
           </div>
@@ -90,7 +121,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
           <div className="flex items-center gap-2">
             <button
               onClick={toggleMasterMute}
-              className={`p-2.5 rounded-xl border transition-all ${
+              className={`p-2.5 rounded-xl border transition-all cursor-pointer ${
                 isMuted
                   ? 'bg-red-500/20 text-red-400 border-red-500/40'
                   : 'bg-white/5 text-neutral-300 border-white/10 hover:bg-white/10'
@@ -101,21 +132,49 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
             </button>
             <button
               onClick={onClose}
-              className="p-2.5 rounded-xl bg-white/5 text-neutral-400 hover:text-white border border-white/10 hover:bg-white/10 transition-all"
+              className="p-2.5 rounded-xl bg-white/5 text-neutral-400 hover:text-white border border-white/10 hover:bg-white/10 transition-all cursor-pointer"
             >
               <X size={18} />
             </button>
           </div>
         </div>
 
+        {/* Audio Engine Status Badge */}
+        <div className="mt-5 p-3 rounded-2xl bg-white/[0.03] border border-white/[0.08] flex items-center justify-between text-xs font-mono">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <span className="text-neutral-300">WEB AUDIO API MULTI-CHANNEL SYNTHESIZER</span>
+          </div>
+          <span className="text-emerald-400 font-bold uppercase">ZERO-LATENCY ONLINE</span>
+        </div>
+
         {/* Body Controls */}
-        <div className="space-y-6 py-6">
-          {/* 1. Engine Acoustic Level */}
-          <div className="space-y-2">
+        <div className="space-y-5 py-6">
+          {/* Master Volume */}
+          <div className="space-y-1.5 p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-neutral-200 uppercase tracking-wider flex items-center gap-2 font-bold">
+                <Volume2 size={14} className="text-amber-400" />
+                MASTER MIX BUS OUTPUT
+              </span>
+              <span className="text-amber-400 font-bold">{masterVolume}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={masterVolume}
+              onChange={(e) => handleMasterChange(Number(e.target.value))}
+              className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+            />
+          </div>
+
+          {/* 1. Engine Powertrain Level */}
+          <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                 <Zap size={14} className="text-amber-400" />
-                POWERTRAIN SYNTHESIS GAIN
+                CRANKSHAFT COMBUSTION HARMONICS
               </span>
               <span className="text-amber-400 font-bold">{engineVolume}%</span>
             </div>
@@ -124,51 +183,70 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
               min="0"
               max="100"
               value={engineVolume}
-              onChange={(e) => setEngineVolume(Number(e.target.value))}
+              onChange={(e) => handleEngineGainChange(Number(e.target.value))}
               className="w-full accent-amber-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
             />
           </div>
 
-          {/* 2. Atmospheric Ambience Level */}
-          <div className="space-y-2">
+          {/* 2. Exhaust Gas System */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+                <Sparkles size={14} className="text-red-400" />
+                EXHAUST RESONATOR & OVERRUN CRACKLES
+              </span>
+              <span className="text-red-400 font-bold">{exhaustVolume}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={exhaustVolume}
+              onChange={(e) => handleExhaustGainChange(Number(e.target.value))}
+              className="w-full accent-red-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+            />
+          </div>
+
+          {/* 3. Tire Squeal & Friction */}
+          <div className="space-y-1.5">
+            <div className="flex justify-between text-xs font-mono">
+              <span className="text-neutral-300 uppercase tracking-wider flex items-center gap-2">
+                <Activity size={14} className="text-yellow-400" />
+                TIRE SCRUB & LATERAL SLIP FRICTION
+              </span>
+              <span className="text-yellow-400 font-bold">{tireVolume}%</span>
+            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={tireVolume}
+              onChange={(e) => handleTireGainChange(Number(e.target.value))}
+              className="w-full accent-yellow-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+            />
+          </div>
+
+          {/* 4. Wind Rush & Aero Acoustics */}
+          <div className="space-y-1.5">
             <div className="flex justify-between text-xs font-mono">
               <span className="text-neutral-300 uppercase tracking-wider flex items-center gap-2">
                 <Wind size={14} className="text-cyan-400" />
-                ATMOSPHERIC CIRCUIT AMBIENCE
+                HIGH-VELOCITY WIND AERO DYNAMICS
               </span>
-              <span className="text-cyan-400 font-bold">
-                {isAmbiencePlaying ? `${ambienceVolume}%` : 'MUTED'}
-              </span>
+              <span className="text-cyan-400 font-bold">{windVolume}%</span>
             </div>
-            <div className="flex items-center gap-3">
-              <input
-                type="range"
-                min="0"
-                max="100"
-                disabled={!isAmbiencePlaying}
-                value={ambienceVolume}
-                onChange={(e) => {
-                  const val = Number(e.target.value);
-                  setAmbienceVolume(val);
-                  ambienceSound.setVolume(val / 100);
-                }}
-                className="flex-1 accent-cyan-400 cursor-pointer h-2 bg-neutral-800 rounded-lg disabled:opacity-30"
-              />
-              <button
-                onClick={toggleAmbience}
-                className={`px-3 py-1.5 rounded-lg border text-[11px] font-mono uppercase tracking-wider transition-all ${
-                  isAmbiencePlaying
-                    ? 'bg-cyan-500/20 text-cyan-300 border-cyan-500/30'
-                    : 'bg-white/5 text-neutral-400 border-white/10'
-                }`}
-              >
-                {isAmbiencePlaying ? 'ON' : 'OFF'}
-              </button>
-            </div>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={windVolume}
+              onChange={(e) => handleWindGainChange(Number(e.target.value))}
+              className="w-full accent-cyan-400 cursor-pointer h-2 bg-neutral-800 rounded-lg"
+            />
           </div>
 
-          {/* 3. Reverb Acoustic Space */}
-          <div className="space-y-2">
+          {/* 5. Reverb Acoustic Space */}
+          <div className="space-y-2 pt-2">
             <div className="text-xs font-mono uppercase tracking-wider text-neutral-300 flex items-center gap-2">
               <Disc size={14} className="text-emerald-400" />
               ACOUSTIC CONVOLUTION IMPULSE
@@ -180,7 +258,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                   <button
                     key={env}
                     onClick={() => handleAcousticEnvChange(env)}
-                    className={`py-3 px-3 rounded-xl border text-center font-mono text-xs uppercase tracking-wider transition-all ${
+                    className={`py-3 px-3 rounded-xl border text-center font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]'
                         : 'bg-white/5 text-neutral-400 border-white/10 hover:border-white/20'
@@ -196,7 +274,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
             </div>
           </div>
 
-          {/* 4. Active Exhaust Flap Valves */}
+          {/* 6. Active Exhaust Flap Valves */}
           <div className="space-y-2">
             <div className="text-xs font-mono uppercase tracking-wider text-neutral-300 flex items-center gap-2">
               <Sparkles size={14} className="text-red-400" />
@@ -209,7 +287,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                   <button
                     key={mode}
                     onClick={() => handleValveChange(mode)}
-                    className={`py-3 px-3 rounded-xl border text-center font-mono text-xs uppercase tracking-wider transition-all ${
+                    className={`py-3 px-3 rounded-xl border text-center font-mono text-xs uppercase tracking-wider transition-all cursor-pointer ${
                       isSelected
                         ? 'bg-red-500/20 text-red-300 border-red-500/50 shadow-[0_0_15px_rgba(239,68,68,0.3)]'
                         : 'bg-white/5 text-neutral-400 border-white/10 hover:border-white/20'
@@ -225,7 +303,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
             </div>
           </div>
 
-          {/* 5. Live Acoustic Transient Triggers */}
+          {/* 7. Live Acoustic Transient Triggers */}
           <div className="pt-2 border-t border-white/10">
             <div className="text-[10px] uppercase font-mono tracking-widest text-neutral-400 mb-3">
               INSTANT ACOUSTIC SAMPLING
@@ -236,7 +314,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                   engineSound.triggerThrottleBlip();
                   showToast('REV: Throttle Heel-and-Toe Blip');
                 }}
-                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center"
+                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center cursor-pointer"
               >
                 BLIP REV
               </button>
@@ -245,7 +323,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                   engineSound.triggerBlowOffValve();
                   showToast('TURBO: Compressor Surge Flutter');
                 }}
-                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center"
+                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center cursor-pointer"
               >
                 BLOW-OFF VALVE
               </button>
@@ -254,7 +332,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
                   engineSound.triggerExhaustBackfire();
                   showToast('EXHAUST: Gunshot Overrun Pop');
                 }}
-                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center"
+                className="py-2.5 px-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-[11px] font-mono text-neutral-200 transition-all text-center cursor-pointer"
               >
                 GUNSHOT POP
               </button>
@@ -266,7 +344,7 @@ export const AudioMixerModal: React.FC<AudioMixerModalProps> = ({
         <div className="border-t border-white/10 pt-4 flex justify-end">
           <button
             onClick={onClose}
-            className="px-6 py-2.5 rounded-full bg-white text-black font-black font-syne uppercase tracking-wider text-xs hover:bg-amber-400 transition-all"
+            className="px-6 py-2.5 rounded-full bg-white text-black font-black font-syne uppercase tracking-wider text-xs hover:bg-amber-400 transition-all cursor-pointer"
           >
             CONFIRM & CLOSE
           </button>

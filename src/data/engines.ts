@@ -253,6 +253,27 @@ export const ENGINES: EngineSpec[] = [
     firingOrder: '1-12-4-9-2-11-6-7-3-10-5-8',
     vehicleModel: 'lambo-aventador',
   },
+  {
+    id: 'nissan-vr38dett',
+    name: 'Nissan 3.8L VR38DETT Twin-Turbo V6',
+    code: 'VR38DETT NISMO SPEC',
+    type: '3.8-Liter 60° Twin-Turbo DOHC 24V Plasma-Sprayed V6',
+    displacement: '3,799 cc',
+    cylinders: '60° V6 Closed-Deck Aluminum Block',
+    aspiration: 'Twin-Turbo',
+    powerHp: 600,
+    powerKw: 447,
+    torqueNm: 652,
+    torqueLbFt: 481,
+    redlineRpm: 7200,
+    idleRpm: 750,
+    maxBoostPsi: 21.8,
+    compressionRatio: '9.0:1',
+    soundProfile: 'vr38-twin-turbo',
+    soundDescription: 'Aggressive twin-turbo V6 rasp with high-velocity IHI turbocharger spool whistle and rapid dual-clutch transmission shift cuts.',
+    firingOrder: '1-2-3-4-5-6',
+    vehicleModel: 'nissan-gtr-r35',
+  },
 ];
 
 export const ALL_ENGINES = ENGINES;
@@ -261,6 +282,8 @@ export function getEngineForModel(modelType: CarModelType): EngineSpec {
   switch (modelType) {
     case 'lambo-aventador':
       return ENGINES.find((e) => e.id === 'lambo-l539-v12') || ENGINES[9];
+    case 'nissan-gtr-r35':
+      return ENGINES.find((e) => e.id === 'nissan-vr38dett') || ENGINES[0];
     case 'beast-v12-ai':
       return ENGINES[9];
     case 'beast-ev':
