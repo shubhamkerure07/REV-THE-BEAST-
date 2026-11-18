@@ -99,23 +99,23 @@ const CIRCUITS: Record<TrackCircuitId, CircuitSpec> = {
     curbColor: 0xf59e0b,
     barrierColor: 0x78716c,
     isDragStrip: false,
-    description: 'High-speed cambered coastal asphalt flanked by rugged Pacific sea cliffs and dusk lighting.',
+    description: 'Breathtaking coastal cliffs and mountain switchbacks alongside Pacific ocean vistas.',
   },
   'drag-strip': {
     id: 'drag-strip',
-    name: 'Santa Pod 1/4 Mile Dragway',
-    location: 'Bedfordshire, UK',
+    name: 'Quarter-Mile Dragway (Santa Ana)',
+    location: 'Santa Ana Raceway, California, USA',
     lengthKm: 0.402,
     totalLaps: 1,
-    recordLap: '00:08.420',
-    skyColor: 0x11131c,
-    fogColor: 0x0a0c12,
+    recordLap: '00:08.920',
+    skyColor: 0x140c10,
+    fogColor: 0x0a0608,
     fogDensity: 0.002,
-    asphaltColor: 0x181920,
-    curbColor: 0xeab308,
-    barrierColor: 0x64748b,
+    asphaltColor: 0x17171d,
+    curbColor: 0xe11d48,
+    barrierColor: 0x475569,
     isDragStrip: true,
-    description: 'Full 1/4-mile straight (402m) launch strip with Christmas Tree staging sensors and trap speed radar.',
+    description: 'Championship NHRA-spec VHT prepped dragstrip with staging Christmas tree and timing beams.',
   },
 };
 
@@ -127,10 +127,10 @@ interface AiOpponent {
   name: string;
   color: string;
   mesh: THREE.Group;
-  progressU: number; // 0 to 1 along spline
+  progressU: number;
   speedKmh: number;
   targetSpeedKmh: number;
-  lateralOffset: number; // offset from track center line
+  lateralOffset: number;
   lap: number;
 }
 
@@ -150,6 +150,26 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
   const [simState, setSimState] = useState<SimState>('staging');
   const [countdownNum, setCountdownNum] = useState<number>(3);
 
+  // Synchronous State Refs to prevent stale closure in render loop
+  const simStateRef = useRef<SimState>('staging');
+  const cameraModeRef = useRef<CameraMode>('chase');
+  const gameModeRef = useRef<RacingGameMode>('quick-race');
+
+  const updateSimState = (state: SimState) => {
+    simStateRef.current = state;
+    setSimState(state);
+  };
+
+  const updateCameraMode = (mode: CameraMode) => {
+    cameraModeRef.current = mode;
+    setCameraMode(mode);
+  };
+
+  const updateGameMode = (mode: RacingGameMode) => {
+    gameModeRef.current = mode;
+    setGameMode(mode);
+  };
+
   // Live Telemetry
   const [speedKmh, setSpeedKmh] = useState<number>(0);
   const [rpm, setRpm] = useState<number>(800);
@@ -167,7 +187,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
   const [dragZeroToHundred, setDragZeroToHundred] = useState<number | null>(null);
   const [dragQuarterMileTime, setDragQuarterMileTime] = useState<number | null>(null);
   const [dragTrapSpeed, setDragTrapSpeed] = useState<number | null>(null);
-  const [christmasTreeStage, setChristmasTreeStage] = useState<number>(0); // 0=off, 1=pre-stage, 2=stage, 3=yellow1, 4=yellow2, 5=yellow3, 6=green, 7=red fault
+  const [christmasTreeStage, setChristmasTreeStage] = useState<number>(0);
 
   // Finished Race Results
   const [finalResults, setFinalResults] = useState<{
@@ -178,7 +198,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     xpEarned: number;
   } | null>(null);
 
-  // Internal references
+  // Keyboard & Mobile Input Refs
   const keysRef = useRef<Record<string, boolean>>({});
   const mobileInputRef = useRef<{
     throttle: boolean;
@@ -194,8 +214,8 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     handbrake: false,
   });
 
-  const playerPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0.4, 0));
-  const playerVelocityRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
+  // Vehicle Dynamics Physics Refs
+  const playerPosRef = useRef<THREE.Vector3>(new THREE.Vector3(0, 0, 0));
   const playerHeadingRef = useRef<number>(0);
   const playerSteerAngleRef = useRef<number>(0);
   const playerSpeedKmhRef = useRef<number>(0);
@@ -207,6 +227,9 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
   const opponentsRef = useRef<AiOpponent[]>([]);
   const trackSplineRef = useRef<THREE.CatmullRomCurve3 | null>(null);
   const trackLengthRef = useRef<number>(1000);
+  const dragZeroToHundredRef = useRef<number | null>(null);
+  const dragQuarterMileRef = useRef<number | null>(null);
+  const dragTrapSpeedRef = useRef<number | null>(null);
 
   const media = getVehicleMedia(config.modelType);
   const engine = getEngineForModel(config.modelType);
@@ -220,7 +243,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     if (!container) return;
 
     // Reset simulator internal values
-    setSimState('staging');
+    updateSimState('staging');
     setSpeedKmh(0);
     playerSpeedKmhRef.current = 0;
     playerProgressURef.current = 0;
@@ -233,6 +256,12 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     setDragQuarterMileTime(null);
     setDragTrapSpeed(null);
     setChristmasTreeStage(0);
+    dragZeroToHundredRef.current = null;
+    dragQuarterMileRef.current = null;
+    dragTrapSpeedRef.current = null;
+
+    const clientW = container.clientWidth || window.innerWidth;
+    const clientH = container.clientHeight || window.innerHeight;
 
     // 1. Scene
     const scene = new THREE.Scene();
@@ -240,7 +269,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     scene.fog = new THREE.FogExp2(currentCircuit.fogColor, currentCircuit.fogDensity);
 
     // 2. Camera
-    const camera = new THREE.PerspectiveCamera(72, container.clientWidth / container.clientHeight, 0.1, 1200);
+    const camera = new THREE.PerspectiveCamera(72, clientW / Math.max(1, clientH), 0.1, 1200);
     camera.position.set(0, 2.2, 5.5);
 
     // 3. Renderer
@@ -249,7 +278,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       powerPreference: 'high-performance',
       preserveDrawingBuffer: true,
     });
-    renderer.setSize(container.clientWidth, container.clientHeight);
+    renderer.setSize(clientW, clientH);
     renderer.setPixelRatio(graphicsTier === 'low' ? 1.0 : Math.min(window.devicePixelRatio, 1.8));
     renderer.shadowMap.enabled = graphicsTier !== 'low';
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -281,7 +310,6 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     // 5. Generate Track Geometry & Spline
     let points: THREE.Vector3[] = [];
     if (currentCircuit.isDragStrip) {
-      // Perfectly straight 550m strip
       points = [
         new THREE.Vector3(0, 0, 50),
         new THREE.Vector3(0, 0, 0),
@@ -292,7 +320,6 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         new THREE.Vector3(0, 0, -600), // Runoff area
       ];
     } else if (circuitId === 'tokyo-c1') {
-      // Winding elevated highway loop with sharp corners
       points = [
         new THREE.Vector3(0, 0, 0),
         new THREE.Vector3(0, 0, -250),
@@ -305,7 +332,6 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         new THREE.Vector3(40, 0, 120),
       ];
     } else if (circuitId === 'big-sur') {
-      // Coastal mountain pass with elevation and ocean cliffs
       points = [
         new THREE.Vector3(0, 0, 0),
         new THREE.Vector3(-60, 5, -200),
@@ -318,20 +344,19 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         new THREE.Vector3(80, 0, 40),
       ];
     } else {
-      // Nürburgring GP Circuit (Grand Prix Circuit Loop)
       points = [
         new THREE.Vector3(0, 0, 0),
-        new THREE.Vector3(0, 0, -300), // Main straight
-        new THREE.Vector3(-70, 2, -440), // Turn 1 (Castrol S)
+        new THREE.Vector3(0, 0, -300),
+        new THREE.Vector3(-70, 2, -440),
         new THREE.Vector3(-180, 5, -420),
-        new THREE.Vector3(-260, 7, -260), // Mercedes Arena
+        new THREE.Vector3(-260, 7, -260),
         new THREE.Vector3(-220, 6, -120),
         new THREE.Vector3(-80, 4, -60),
-        new THREE.Vector3(60, 2, -180), // Kurve
+        new THREE.Vector3(60, 2, -180),
         new THREE.Vector3(190, 0, -320),
-        new THREE.Vector3(320, 0, -240), // Kumho Kurve
+        new THREE.Vector3(320, 0, -240),
         new THREE.Vector3(340, 0, -60),
-        new THREE.Vector3(220, 0, 80), // Chicane
+        new THREE.Vector3(220, 0, 80),
         new THREE.Vector3(80, 0, 60),
       ];
     }
@@ -350,122 +375,71 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     const roadGeo = new THREE.BufferGeometry();
     const vertices: number[] = [];
     const uvs: number[] = [];
-    const normals: number[] = [];
+    const indices: number[] = [];
 
-    for (let i = 0; i < trackPoints.length; i++) {
-      const p = trackPoints[i];
-      const nextP = trackPoints[(i + 1) % trackPoints.length];
-      const tangent = new THREE.Vector3().subVectors(nextP, p).normalize();
+    for (let i = 0; i <= samples; i++) {
+      const u = i / samples;
+      const pt = spline.getPointAt(u);
+      const tangent = spline.getTangentAt(u).normalize();
       const normal = new THREE.Vector3(0, 1, 0);
       const binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
 
-      const left = new THREE.Vector3().copy(p).addScaledVector(binormal, trackWidth / 2);
-      const right = new THREE.Vector3().copy(p).addScaledVector(binormal, -trackWidth / 2);
+      const left = pt.clone().addScaledVector(binormal, -trackWidth / 2);
+      const right = pt.clone().addScaledVector(binormal, trackWidth / 2);
 
       vertices.push(left.x, left.y + 0.02, left.z);
       vertices.push(right.x, right.y + 0.02, right.z);
 
-      const u = i / trackPoints.length;
       uvs.push(0, u * 40);
       uvs.push(1, u * 40);
 
-      normals.push(0, 1, 0);
-      normals.push(0, 1, 0);
+      if (i < samples) {
+        const base = i * 2;
+        indices.push(base, base + 1, base + 2);
+        indices.push(base + 1, base + 3, base + 2);
+      }
     }
 
-    const indices: number[] = [];
-    const maxVertPairs = trackPoints.length;
-    for (let i = 0; i < maxVertPairs - (currentCircuit.isDragStrip ? 1 : 0); i++) {
-      const next = (i + 1) % maxVertPairs;
-      const v0 = i * 2;
-      const v1 = i * 2 + 1;
-      const v2 = next * 2;
-      const v3 = next * 2 + 1;
-
-      indices.push(v0, v1, v2);
-      indices.push(v2, v1, v3);
-    }
-
-    roadGeo.setIndex(indices);
     roadGeo.setAttribute('position', new THREE.Float32BufferAttribute(vertices, 3));
     roadGeo.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2));
-    roadGeo.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+    roadGeo.setIndex(indices);
+    roadGeo.computeVertexNormals();
 
     const roadMat = new THREE.MeshStandardMaterial({
       color: currentCircuit.asphaltColor,
       roughness: 0.65,
-      metalness: 0.2,
+      metalness: 0.25,
     });
     const roadMesh = new THREE.Mesh(roadGeo, roadMat);
     roadMesh.receiveShadow = true;
     scene.add(roadMesh);
 
-    // Ground Plane / Surrounding Terrain
-    const groundGeo = new THREE.PlaneGeometry(1600, 1600);
-    const groundMat = new THREE.MeshStandardMaterial({
-      color: circuitId === 'tokyo-c1' ? 0x090a0f : circuitId === 'big-sur' ? 0x1f1b1a : 0x141f17,
-      roughness: 0.9,
-      metalness: 0.1,
+    // Start / Finish Line Banner & Gantry
+    const finishLineGeo = new THREE.PlaneGeometry(trackWidth, 2);
+    finishLineGeo.rotateX(-Math.PI / 2);
+    const finishLineMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+    const finishLine = new THREE.Mesh(finishLineGeo, finishLineMat);
+    finishLine.position.set(0, 0.05, 0);
+    scene.add(finishLine);
+
+    // Track Outer Terrain Floor
+    const terrainGeo = new THREE.PlaneGeometry(1600, 1600);
+    terrainGeo.rotateX(-Math.PI / 2);
+    const terrainMat = new THREE.MeshStandardMaterial({
+      color: circuitId === 'tokyo-c1' ? 0x050508 : circuitId === 'big-sur' ? 0x141812 : 0x0f140e,
+      roughness: 0.95,
+      metalness: 0.05,
     });
-    const groundMesh = new THREE.Mesh(groundGeo, groundMat);
-    groundMesh.rotation.x = -Math.PI / 2;
-    groundMesh.position.y = -0.05;
-    groundMesh.receiveShadow = true;
-    scene.add(groundMesh);
+    const terrain = new THREE.Mesh(terrainGeo, terrainMat);
+    terrain.position.y = -0.1;
+    terrain.receiveShadow = true;
+    scene.add(terrain);
 
-    // Start/Finish Gantry & Overhead Truss
-    const gantryGroup = new THREE.Group();
-    const gantryPillarMat = new THREE.MeshStandardMaterial({ color: 0x334155, metalness: 0.8, roughness: 0.3 });
-    const pillarGeo = new THREE.BoxGeometry(0.8, 8, 0.8);
-    const p1 = new THREE.Mesh(pillarGeo, gantryPillarMat);
-    p1.position.set(-trackWidth / 2 - 1.2, 4, 0);
-    const p2 = new THREE.Mesh(pillarGeo, gantryPillarMat);
-    p2.position.set(trackWidth / 2 + 1.2, 4, 0);
-
-    const beamGeo = new THREE.BoxGeometry(trackWidth + 3.2, 1.2, 1.2);
-    const beam = new THREE.Mesh(beamGeo, gantryPillarMat);
-    beam.position.set(0, 7.5, 0);
-
-    const bannerMat = new THREE.MeshStandardMaterial({ color: 0xeab308, roughness: 0.4 });
-    const bannerGeo = new THREE.BoxGeometry(trackWidth, 1.4, 0.2);
-    const banner = new THREE.Mesh(bannerGeo, bannerMat);
-    banner.position.set(0, 6.2, 0);
-
-    gantryGroup.add(p1, p2, beam, banner);
-    gantryGroup.position.set(0, 0, 0);
-    scene.add(gantryGroup);
-
-    // Guardrails / Armco Barriers along the track perimeter
-    const barrierGeo = new THREE.BoxGeometry(0.25, 1.0, 4);
-    const barrierMat = new THREE.MeshStandardMaterial({
-      color: currentCircuit.barrierColor,
-      metalness: 0.7,
-      roughness: 0.3,
-    });
-
-    const barrierStride = currentCircuit.isDragStrip ? 8 : 12;
-    for (let i = 0; i < trackPoints.length; i += barrierStride) {
-      const p = trackPoints[i];
-      const nextP = trackPoints[(i + 1) % trackPoints.length];
-      const tangent = new THREE.Vector3().subVectors(nextP, p).normalize();
-      const normal = new THREE.Vector3(0, 1, 0);
-      const binormal = new THREE.Vector3().crossVectors(tangent, normal).normalize();
-
-      const bLeft = new THREE.Mesh(barrierGeo, barrierMat);
-      bLeft.position.copy(p).addScaledVector(binormal, trackWidth / 2 + 0.8);
-      bLeft.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tangent);
-      scene.add(bLeft);
-
-      const bRight = new THREE.Mesh(barrierGeo, barrierMat);
-      bRight.position.copy(p).addScaledVector(binormal, -trackWidth / 2 - 0.8);
-      bRight.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), tangent);
-      scene.add(bRight);
-    }
-
-    // City Buildings if Tokyo C1
+    // Tokyo City Skyscrapers
     if (circuitId === 'tokyo-c1') {
-      const bldgGeo = new THREE.BoxGeometry(30, 120, 30);
-      for (let i = 0; i < 40; i++) {
+      for (let b = 0; b < 60; b++) {
+        const bHeight = 40 + Math.random() * 120;
+        const bldgGeo = new THREE.BoxGeometry(20 + Math.random() * 30, bHeight, 20 + Math.random() * 30);
         const bldgMat = new THREE.MeshStandardMaterial({
           color: Math.random() > 0.4 ? 0x0f172a : 0x1e293b,
           roughness: 0.2,
@@ -474,7 +448,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         const bldg = new THREE.Mesh(bldgGeo, bldgMat);
         const radius = 90 + Math.random() * 240;
         const angle = Math.random() * Math.PI * 2;
-        bldg.position.set(Math.cos(angle) * radius, 60, Math.sin(angle) * radius);
+        bldg.position.set(Math.cos(angle) * radius, bHeight / 2, Math.sin(angle) * radius);
         scene.add(bldg);
       }
     }
@@ -514,29 +488,29 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       const wingGeo = new THREE.BoxGeometry(carWidth * 0.9, 0.08, 0.35);
       const wingMat = new THREE.MeshStandardMaterial({ color: 0x111116, metalness: 0.8, roughness: 0.2 });
       const wingMesh = new THREE.Mesh(wingGeo, wingMat);
-      wingMesh.position.set(0, carHeight * 1.05, carLength * 0.44);
+      wingMesh.position.set(0, carHeight * 1.05, -carLength * 0.44);
       playerGroup.add(wingMesh);
     }
 
-    // Headlights (LED Glow)
+    // Headlights (LED Glow - facing forward along +Z)
     const headlightGeo = new THREE.BoxGeometry(0.35, 0.1, 0.1);
     const headlightMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
     const hlLeft = new THREE.Mesh(headlightGeo, headlightMat);
-    hlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
+    hlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
     const hlRight = new THREE.Mesh(headlightGeo, headlightMat);
-    hlRight.position.set(carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
+    hlRight.position.set(carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
     playerGroup.add(hlLeft, hlRight);
 
-    // Taillights
+    // Taillights (facing rear along -Z)
     const taillightGeo = new THREE.BoxGeometry(0.35, 0.1, 0.1);
     const taillightMat = new THREE.MeshBasicMaterial({ color: 0xff1122 });
     const tlLeft = new THREE.Mesh(taillightGeo, taillightMat);
-    tlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
+    tlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
     const tlRight = new THREE.Mesh(taillightGeo, taillightMat);
-    tlRight.position.set(carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
+    tlRight.position.set(carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
     playerGroup.add(tlLeft, tlRight);
 
-    // 4 Wheels
+    // 4 Wheels (Front at +Z, Rear at -Z)
     const wheelGeo = new THREE.CylinderGeometry(0.34, 0.34, 0.26, 18);
     wheelGeo.rotateZ(Math.PI / 2);
     const tireMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.8 });
@@ -545,22 +519,22 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     const frontLeftWheel = new THREE.Group();
     const w1 = new THREE.Mesh(wheelGeo, tireMat);
     frontLeftWheel.add(w1);
-    frontLeftWheel.position.set(-carWidth * 0.5, 0.34, -carLength * 0.32);
+    frontLeftWheel.position.set(-carWidth * 0.5, 0.34, carLength * 0.32);
 
     const frontRightWheel = new THREE.Group();
     const w2 = new THREE.Mesh(wheelGeo, tireMat);
     frontRightWheel.add(w2);
-    frontRightWheel.position.set(carWidth * 0.5, 0.34, -carLength * 0.32);
+    frontRightWheel.position.set(carWidth * 0.5, 0.34, carLength * 0.32);
 
     const rearLeftWheel = new THREE.Group();
     const w3 = new THREE.Mesh(wheelGeo, tireMat);
     rearLeftWheel.add(w3);
-    rearLeftWheel.position.set(-carWidth * 0.5, 0.34, carLength * 0.32);
+    rearLeftWheel.position.set(-carWidth * 0.5, 0.34, -carLength * 0.32);
 
     const rearRightWheel = new THREE.Group();
     const w4 = new THREE.Mesh(wheelGeo, tireMat);
     rearRightWheel.add(w4);
-    rearRightWheel.position.set(carWidth * 0.5, 0.34, carLength * 0.32);
+    rearRightWheel.position.set(carWidth * 0.5, 0.34, -carLength * 0.32);
 
     playerGroup.add(frontLeftWheel, frontRightWheel, rearLeftWheel, rearRightWheel);
 
@@ -579,7 +553,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
     // 7. Spawn AI Opponents (for Quick Race)
     const opponents: AiOpponent[] = [];
-    if (gameMode === 'quick-race' && !currentCircuit.isDragStrip) {
+    if (gameModeRef.current === 'quick-race' && !currentCircuit.isDragStrip) {
       const opponentData = [
         { id: 'ai-1', name: 'K. Takahashi (R35 Nismo)', color: '#dc2626', offset: -3.5, startU: 0.015 },
         { id: 'ai-2', name: 'M. Weber (M4 GT3)', color: '#2563eb', offset: 3.5, startU: 0.025 },
@@ -599,7 +573,18 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         const aiCabin = new THREE.Mesh(aiCabinGeo, aiCabinMat);
         aiCabin.position.set(0, carHeight * 0.85, -carLength * 0.05);
 
-        aiGroup.add(aiMesh, aiCabin);
+        // AI Headlights (+Z) and Taillights (-Z)
+        const aiHlLeft = new THREE.Mesh(headlightGeo, headlightMat);
+        aiHlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
+        const aiHlRight = new THREE.Mesh(headlightGeo, headlightMat);
+        aiHlRight.position.set(carWidth * 0.36, carHeight * 0.45, carLength * 0.5);
+
+        const aiTlLeft = new THREE.Mesh(taillightGeo, taillightMat);
+        aiTlLeft.position.set(-carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
+        const aiTlRight = new THREE.Mesh(taillightGeo, taillightMat);
+        aiTlRight.position.set(carWidth * 0.36, carHeight * 0.45, -carLength * 0.5);
+
+        aiGroup.add(aiMesh, aiCabin, aiHlLeft, aiHlRight, aiTlLeft, aiTlRight);
         scene.add(aiGroup);
 
         opponents.push({
@@ -626,6 +611,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     const loop = () => {
       animId = requestAnimationFrame(loop);
       const dt = Math.min(0.05, clock.getDelta());
+      const now = performance.now();
 
       // Read Inputs
       const keys = keysRef.current;
@@ -640,10 +626,11 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       // Physics state calculations
       const currentSpeed = playerSpeedKmhRef.current;
       const hp = engine.powerHp || 650;
-      const weight = 1550; // kg
+      const weight = 1550;
       const maxSpeed = parseInt(media.keySpecs.topSpeed) || 330;
 
-      if (simState === 'racing') {
+      // Check current live simulation state from Ref (prevents stale closure)
+      if (simStateRef.current === 'racing') {
         // A. ACCELERATION
         if (isAccelerating) {
           const powerFactor = (hp / weight) * 44.0;
@@ -677,21 +664,19 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         playerSpeedKmhRef.current = Math.max(0, Math.min(maxSpeed * 1.04, playerSpeedKmhRef.current));
         maxSpeedRecordedRef.current = Math.max(maxSpeedRecordedRef.current, Math.round(playerSpeedKmhRef.current));
 
-        // D. STEERING & YAW
-        const speedKmhNorm = Math.max(15, playerSpeedKmhRef.current);
-        // Speed-dependent steering angle (tighter at high speeds)
+        // D. STEERING & YAW (Corrected directional response: A/Left turns left, D/Right turns right)
         const steerSpeedMultiplier = Math.max(0.35, 1.0 - (currentSpeed / maxSpeed) * 0.65);
         const steerRate = 2.4 * steerSpeedMultiplier;
 
         if (isSteeringLeft) {
-          playerSteerAngleRef.current = THREE.MathUtils.lerp(playerSteerAngleRef.current, 0.42, dt * 8);
-          playerHeadingRef.current += steerRate * dt * (playerSpeedKmhRef.current / 90);
+          playerSteerAngleRef.current = THREE.MathUtils.lerp(playerSteerAngleRef.current, -0.42, dt * 8);
+          playerHeadingRef.current -= steerRate * dt * (playerSpeedKmhRef.current / 90);
           if (isHandbraking || currentSpeed > 180) {
             engineSound.playTireScreech(0.65);
           }
         } else if (isSteeringRight) {
-          playerSteerAngleRef.current = THREE.MathUtils.lerp(playerSteerAngleRef.current, -0.42, dt * 8);
-          playerHeadingRef.current -= steerRate * dt * (playerSpeedKmhRef.current / 90);
+          playerSteerAngleRef.current = THREE.MathUtils.lerp(playerSteerAngleRef.current, 0.42, dt * 8);
+          playerHeadingRef.current += steerRate * dt * (playerSpeedKmhRef.current / 90);
           if (isHandbraking || currentSpeed > 180) {
             engineSound.playTireScreech(0.65);
           }
@@ -724,46 +709,72 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
         // F. TRACK BOUNDARY & SPLINE PROGRESS
         if (spline) {
-          // Find closest U on track spline
           const trackLen = trackLengthRef.current;
           const uStep = (velocityMps * dt) / trackLen;
           playerProgressURef.current = (playerProgressURef.current + uStep);
 
-          if (playerProgressURef.current >= 1.0) {
-            playerProgressURef.current -= 1.0;
-            currentLapRef.current += 1;
-            setCurrentLap(currentLapRef.current);
-            showToast(`COMPLETED LAP ${currentLapRef.current - 1} / ${currentCircuit.totalLaps}`);
+          // Drag Strip Specific Timing & Finish Check (1/4 Mile = 402m)
+          if (currentCircuit.isDragStrip) {
+            const elapsedSec = (now - raceStartTimeRef.current) / 1000;
+            if (dragZeroToHundredRef.current === null && playerSpeedKmhRef.current >= 100) {
+              dragZeroToHundredRef.current = elapsedSec;
+              setDragZeroToHundred(Number(elapsedSec.toFixed(2)));
+              showToast(`0-100 KM/H SPRINT: ${elapsedSec.toFixed(2)}s`);
+            }
 
-            // Lap time check
-            const now = performance.now();
-            const lapDuration = now - lapStartTimeRef.current;
-            lapStartTimeRef.current = now;
-            setBestLapTimeMs((prev) => (prev ? Math.min(prev, lapDuration) : lapDuration));
+            const distTraveled = Math.abs(playerPosRef.current.z - startPoint.z);
+            if (distTraveled >= 402 && dragQuarterMileRef.current === null) {
+              dragQuarterMileRef.current = elapsedSec;
+              dragTrapSpeedRef.current = Math.round(playerSpeedKmhRef.current);
+              setDragQuarterMileTime(Number(elapsedSec.toFixed(2)));
+              setDragTrapSpeed(Math.round(playerSpeedKmhRef.current));
 
-            if (currentLapRef.current > currentCircuit.totalLaps) {
-              // Finish Race
-              setSimState('finished');
+              updateSimState('finished');
               engineSound.playCheckeredFlagFanfare();
-              showToast('CHECKERED FLAG! RACE FINISHED!');
-              const totalElapsed = now - raceStartTimeRef.current;
+              showToast(`1/4 MILE: ${elapsedSec.toFixed(2)}s @ ${Math.round(playerSpeedKmhRef.current)} KM/H!`);
+
               setFinalResults({
-                position: racePosition,
-                totalTimeStr: formatMs(totalElapsed),
-                bestLapStr: formatMs(bestLapTimeMs || totalElapsed),
-                maxSpeedKmh: maxSpeedRecordedRef.current,
-                xpEarned: racePosition === 1 ? 750 : racePosition === 2 ? 450 : 250,
+                position: 1,
+                totalTimeStr: `${elapsedSec.toFixed(2)}s ET`,
+                bestLapStr: `0-100 in ${dragZeroToHundredRef.current ? dragZeroToHundredRef.current.toFixed(2) : '--'}s`,
+                maxSpeedKmh: Math.round(playerSpeedKmhRef.current),
+                xpEarned: 1000,
               });
             }
-          }
+          } else {
+            // Standard Closed-Circuit Lap Progress
+            if (playerProgressURef.current >= 1.0) {
+              playerProgressURef.current -= 1.0;
+              currentLapRef.current += 1;
+              setCurrentLap(currentLapRef.current);
+              showToast(`COMPLETED LAP ${currentLapRef.current - 1} / ${currentCircuit.totalLaps}`);
 
-          // Off-track grass penalty check
-          const trackCenter = spline.getPointAt(playerProgressURef.current % 1.0);
-          const distToCenter = playerPosRef.current.distanceTo(trackCenter);
-          if (distToCenter > trackWidth / 2 + 1.5) {
-            // In grass/gravel
-            playerSpeedKmhRef.current = Math.max(0, playerSpeedKmhRef.current - 90.0 * dt);
-            engineSound.playTireScreech(0.3);
+              const lapDuration = now - lapStartTimeRef.current;
+              lapStartTimeRef.current = now;
+              setBestLapTimeMs((prev) => (prev ? Math.min(prev, lapDuration) : lapDuration));
+
+              if (currentLapRef.current > currentCircuit.totalLaps) {
+                updateSimState('finished');
+                engineSound.playCheckeredFlagFanfare();
+                showToast('CHECKERED FLAG! RACE FINISHED!');
+                const totalElapsed = now - raceStartTimeRef.current;
+                setFinalResults({
+                  position: racePosition,
+                  totalTimeStr: formatMs(totalElapsed),
+                  bestLapStr: formatMs(bestLapTimeMs || totalElapsed),
+                  maxSpeedKmh: maxSpeedRecordedRef.current,
+                  xpEarned: racePosition === 1 ? 750 : racePosition === 2 ? 450 : 250,
+                });
+              }
+            }
+
+            // Off-track grass penalty check
+            const nearestPt = spline.getPointAt(playerProgressURef.current);
+            const lateralDist = playerGroup.position.distanceTo(nearestPt);
+            if (lateralDist > trackWidth / 2 + 1.5) {
+              playerSpeedKmhRef.current = Math.max(0, playerSpeedKmhRef.current - 95.0 * dt);
+              engineSound.playTireScreech(0.3);
+            }
           }
         }
 
@@ -774,7 +785,6 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         if (opponentsRef.current.length > 0 && spline) {
           let aheadCount = 0;
           opponentsRef.current.forEach((ai) => {
-            // AI acceleration and speed target
             ai.speedKmh = THREE.MathUtils.lerp(ai.speedKmh, ai.targetSpeedKmh, dt * 0.4);
             const aiMps = ai.speedKmh / 3.6;
             ai.progressU = (ai.progressU + (aiMps * dt) / trackLengthRef.current) % 1.0;
@@ -787,12 +797,10 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             ai.mesh.position.y = 0.05;
             ai.mesh.rotation.y = Math.atan2(aiTangent.x, aiTangent.z);
 
-            // Compute race rank
             if (ai.progressU > playerProgressURef.current) {
               aheadCount++;
             }
 
-            // Player-to-AI Collision Check
             const distToAi = playerGroup.position.distanceTo(ai.mesh.position);
             if (distToAi < 2.6) {
               engineSound.playCollisionSound(1.2);
@@ -804,17 +812,13 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
         }
 
         // I. UPDATE TIMERS & UI TELEMETRY
-        const now = performance.now();
         setLapTimeMs(now - lapStartTimeRef.current);
         setSpeedKmh(Math.round(playerSpeedKmhRef.current));
 
-        // Simulated gear and RPM
-        const gearRatios = [3.8, 2.4, 1.7, 1.3, 1.0, 0.8, 0.65];
         const calculatedGear = Math.min(7, Math.max(1, Math.floor(playerSpeedKmhRef.current / 48) + 1));
         setCurrentGear(calculatedGear);
         const redline = engine.redlineRpm || 8000;
         const idle = engine.idleRpm || 800;
-        const gearSpeedMax = calculatedGear * 52;
         const speedRatioInGear = (playerSpeedKmhRef.current % 52) / 52;
         const currentRpm = Math.min(redline, Math.round(idle + speedRatioInGear * (redline - idle)));
         setRpm(currentRpm);
@@ -825,9 +829,10 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       }
 
       // -----------------------------------------------------------------------
-      // CAMERA CONTROLLER
+      // CAMERA CONTROLLER (Uses cameraModeRef to prevent stale closure)
       // -----------------------------------------------------------------------
-      if (cameraMode === 'chase') {
+      const activeCamMode = cameraModeRef.current;
+      if (activeCamMode === 'chase') {
         const chaseDistance = 6.2 + (playerSpeedKmhRef.current / maxSpeed) * 1.8;
         const chaseHeight = 2.4;
         const camTargetPos = new THREE.Vector3()
@@ -843,10 +848,9 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
         camera.position.lerp(camTargetPos, 0.12);
         camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1.1, playerGroup.position.z);
-        // Dynamic FOV for speed sensation
         camera.fov = 72 + (playerSpeedKmhRef.current / maxSpeed) * 18;
         camera.updateProjectionMatrix();
-      } else if (cameraMode === 'hood') {
+      } else if (activeCamMode === 'hood') {
         camera.position.set(
           playerGroup.position.x + Math.sin(playerHeadingRef.current) * 1.2,
           playerGroup.position.y + 0.95,
@@ -885,7 +889,12 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     const handleKeyDown = (e: KeyboardEvent) => {
       keysRef.current[e.code] = true;
       if (e.code === 'KeyC') {
-        setCameraMode((prev) => (prev === 'chase' ? 'hood' : prev === 'hood' ? 'cockpit' : 'chase'));
+        const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : 'chase';
+        updateCameraMode(next);
+      } else if (e.code === 'Enter' || e.code === 'Space') {
+        if (simStateRef.current === 'staging') {
+          handleStartRace();
+        }
       }
     };
     const handleKeyUp = (e: KeyboardEvent) => {
@@ -896,11 +905,17 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
     // Resize
     const handleResize = () => {
-      if (!container) return;
-      camera.aspect = container.clientWidth / container.clientHeight;
+      if (!container || !renderer || !camera) return;
+      const w = container.clientWidth || window.innerWidth;
+      const h = container.clientHeight || window.innerHeight;
+      if (w === 0 || h === 0) return;
+      camera.aspect = w / h;
       camera.updateProjectionMatrix();
-      renderer.setSize(container.clientWidth, container.clientHeight);
+      renderer.setSize(w, h);
     };
+
+    handleResize();
+
     const ro = new ResizeObserver(handleResize);
     ro.observe(container);
 
@@ -926,7 +941,6 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     const pts = trackSplineRef.current.getSpacedPoints(80);
 
-    // Map bounds
     let minX = Infinity, maxX = -Infinity, minZ = Infinity, maxZ = -Infinity;
     pts.forEach((p) => {
       if (p.x < minX) minX = p.x;
@@ -981,7 +995,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
   // 3. START COUNTDOWN SEQUENCE
   // ---------------------------------------------------------------------------
   const handleStartRace = () => {
-    setSimState('countdown');
+    updateSimState('countdown');
     setCountdownNum(3);
     engineSound.setProfile(engine.soundProfile);
     engineSound.start();
@@ -1000,7 +1014,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
     setTimeout(() => {
       setCountdownNum(0); // GO!
       engineSound.playCountdownBeep(true);
-      setSimState('racing');
+      updateSimState('racing');
       const now = performance.now();
       raceStartTimeRef.current = now;
       lapStartTimeRef.current = now;
@@ -1016,7 +1030,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
   };
 
   return (
-    <div className="relative w-full h-screen bg-[#08080a] text-white select-none overflow-hidden font-sans">
+    <div className="relative w-full h-full bg-[#08080a] text-white select-none overflow-hidden font-sans">
       {/* 3D WebGL Canvas Viewport */}
       <div ref={containerRef} className="w-full h-full cursor-crosshair" />
 
@@ -1024,9 +1038,9 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       {/* OVERLAY: PRE-RACE STAGING & MODE SELECTION                           */}
       {/* -------------------------------------------------------------------- */}
       {simState === 'staging' && (
-        <div className="absolute inset-0 z-40 bg-[#08080a]/90 backdrop-blur-xl flex flex-col justify-between p-6 sm:p-12 overflow-y-auto">
+        <div className="absolute inset-0 z-40 bg-[#08080a]/92 backdrop-blur-xl flex flex-col justify-between p-6 sm:p-10 pt-20 sm:pt-24 overflow-y-auto">
           {/* Top Header */}
-          <div className="flex items-center justify-between border-b border-white/10 pb-6">
+          <div className="flex items-center justify-between border-b border-white/10 pb-4">
             <button
               onClick={onExit}
               className="flex items-center gap-2 text-neutral-400 hover:text-white font-mono text-xs uppercase tracking-widest cursor-pointer transition-colors"
@@ -1056,12 +1070,12 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
           </div>
 
           {/* Center Stage: Circuit & Game Mode Selection */}
-          <div className="max-w-5xl mx-auto w-full my-auto py-8 space-y-8">
+          <div className="max-w-5xl mx-auto w-full my-auto py-6 space-y-6">
             <div>
-              <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-2">
+              <span className="text-xs font-mono uppercase tracking-[0.25em] text-amber-400 font-bold block mb-1">
                 RACING SIMULATOR 3D // MOTORSPORT PLATFORM
               </span>
-              <h1 className="font-syne font-black text-4xl sm:text-6xl text-white tracking-tighter uppercase leading-[0.95]">
+              <h1 className="font-syne font-black text-3xl sm:text-5xl text-white tracking-tighter uppercase leading-[0.95]">
                 SELECT CIRCUIT & DISCIPLINE.
               </h1>
             </div>
@@ -1077,7 +1091,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                 <button
                   key={m.id}
                   onClick={() => {
-                    setGameMode(m.id as RacingGameMode);
+                    updateGameMode(m.id as RacingGameMode);
                     if (m.id === 'drag') setCircuitId('drag-strip');
                     else if (circuitId === 'drag-strip') setCircuitId('nurburgring');
                   }}
@@ -1103,20 +1117,28 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
                     onClick={() => setCircuitId(id)}
                     className={`p-5 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between ${
                       isSelected
-                        ? 'bg-white/10 border-amber-400 shadow-xl ring-1 ring-amber-400/40'
+                        ? 'bg-amber-400/10 border-amber-400/80 shadow-xl ring-1 ring-amber-400/30'
                         : 'bg-white/[0.02] border-white/10 hover:border-white/20'
                     }`}
                   >
                     <div>
-                      <span className="text-[10px] font-mono text-neutral-400 uppercase tracking-widest block mb-1">
-                        {c.location}
-                      </span>
-                      <h3 className="font-syne font-bold text-lg text-white mb-2">{c.name}</h3>
-                      <p className="text-xs text-neutral-400 font-sans line-clamp-2">{c.description}</p>
+                      <div className="flex items-center justify-between mb-2">
+                        <span className="text-[10px] font-mono uppercase tracking-widest text-neutral-400">
+                          {c.lengthKm} KM
+                        </span>
+                        {isSelected && (
+                          <span className="w-2 h-2 rounded-full bg-amber-400" />
+                        )}
+                      </div>
+                      <h4 className="font-syne font-bold text-base text-white">{c.name}</h4>
+                      <p className="text-[11px] text-neutral-400 font-sans mt-1 line-clamp-2">
+                        {c.description}
+                      </p>
                     </div>
-                    <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between text-xs font-mono">
-                      <span className="text-amber-400 font-bold">{c.lengthKm} KM</span>
-                      <span className="text-neutral-400">{c.totalLaps} {c.totalLaps === 1 ? 'LAP' : 'LAPS'}</span>
+
+                    <div className="pt-4 border-t border-white/[0.06] mt-4 flex items-center justify-between font-mono text-[10px]">
+                      <span className="text-neutral-500 uppercase">RECORD</span>
+                      <span className="text-amber-400 font-bold">{c.recordLap}</span>
                     </div>
                   </div>
                 );
@@ -1129,7 +1151,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
             <div className="flex items-center gap-3">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping" />
               <span className="text-xs font-mono text-neutral-300">
-                ACTIVE WEAPON: <span className="text-white font-bold">{media.name}</span> ({engine.powerHp} HP)
+                ACTIVE VEHICLE: <span className="text-white font-bold">{media.name}</span> ({engine.powerHp} HP)
               </span>
             </div>
 
@@ -1138,7 +1160,7 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
               className="w-full sm:w-auto px-10 py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-syne font-black text-sm uppercase tracking-wider transition-all shadow-2xl flex items-center justify-center gap-3 cursor-pointer hover:scale-105"
             >
               <Play className="w-4 h-4 fill-black" />
-              <span>COMMENCE SIMULATION</span>
+              <span>COMMENCE SIMULATION (PRESS ENTER)</span>
             </button>
           </div>
         </div>
@@ -1198,128 +1220,131 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
 
               {/* Mini-map Canvas */}
               {!currentCircuit.isDragStrip && (
-                <div className="w-28 h-28 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 p-1 flex items-center justify-center">
-                  <canvas ref={minimapCanvasRef} width={112} height={112} />
+                <div className="w-28 h-28 rounded-2xl bg-black/70 backdrop-blur-md border border-white/10 overflow-hidden relative shadow-lg">
+                  <canvas ref={minimapCanvasRef} width={112} height={112} className="w-full h-full" />
                 </div>
               )}
             </div>
           </div>
 
-          {/* Center Warning Prompts (Drift / Redline) */}
-          <div className="flex flex-col items-center justify-center space-y-2 pointer-events-none">
-            {isDrifting && (
-              <div className="px-5 py-1.5 rounded-full bg-amber-400 text-black font-mono font-black text-xs uppercase tracking-widest animate-pulse shadow-lg">
-                DRIFT ANGLE ACTIVE
-              </div>
-            )}
-            {rpm > (engine.redlineRpm || 8000) * 0.92 && (
-              <div className="px-6 py-2 rounded-full bg-red-600 text-white font-mono font-black text-xs uppercase tracking-widest animate-bounce shadow-xl">
-                ▲ SHIFT UP [AUTO SYNC] ▲
-              </div>
-            )}
-          </div>
-
-          {/* Bottom Deck: Speedometer & Tachometer */}
-          <div className="flex items-end justify-between">
-            {/* Camera Switcher Pill */}
-            <div className="pointer-events-auto flex items-center gap-2">
-              <button
-                onClick={() => setCameraMode((prev) => (prev === 'chase' ? 'hood' : prev === 'hood' ? 'cockpit' : 'chase'))}
-                className="px-4 py-2 rounded-full bg-black/60 hover:bg-black/80 backdrop-blur-md border border-white/15 text-xs font-mono font-bold uppercase tracking-wider text-neutral-300 flex items-center gap-2 cursor-pointer"
-              >
-                <Camera className="w-3.5 h-3.5 text-amber-400" />
-                <span className="capitalize">{cameraMode} Cam (Key: C)</span>
-              </button>
+          {/* Center Drifting Indicator */}
+          {isDrifting && (
+            <div className="self-center px-6 py-2 rounded-full bg-amber-400 text-black font-syne font-black text-sm tracking-widest uppercase animate-pulse shadow-xl shadow-amber-400/40">
+              DRIFT ANGLE ACTIVE // TIRE SCRUB
             </div>
+          )}
 
-            {/* Central Instruments */}
-            <div className="flex items-end gap-6 bg-black/70 backdrop-blur-xl border border-white/15 rounded-3xl p-5 shadow-2xl">
-              {/* Gear Box */}
-              <div className="w-16 h-16 rounded-2xl bg-white/5 border border-white/10 flex flex-col items-center justify-center">
-                <span className="text-[9px] font-mono text-neutral-400 uppercase">GEAR</span>
-                <span className="text-3xl font-syne font-black text-amber-400 leading-none mt-0.5">{currentGear}</span>
-              </div>
+          {/* Bottom HUD: Tachometer, Speed, Controls & Camera */}
+          <div className="flex items-end justify-between">
+            {/* Speedometer & Gear */}
+            <div className="flex items-end gap-4">
+              <div className="p-6 rounded-3xl bg-black/80 backdrop-blur-md border border-white/10 flex flex-col">
+                <div className="flex items-baseline gap-2">
+                  <span className="text-6xl sm:text-7xl font-grotesk font-black text-white tracking-tighter leading-none">
+                    {speedKmh}
+                  </span>
+                  <span className="text-sm font-mono text-neutral-400 uppercase tracking-widest">
+                    KM/H
+                  </span>
+                </div>
 
-              {/* Speedometer */}
-              <div className="text-right">
-                <div className="text-7xl font-syne font-black text-white leading-none tracking-tight">
-                  {speedKmh}
-                </div>
-                <div className="text-[10px] font-mono uppercase tracking-widest text-neutral-400 mt-1 flex items-center justify-end gap-2">
-                  <span className="text-amber-400 font-bold">KM / H</span>
-                  <span>•</span>
-                  <span>{Math.round(speedKmh * 0.621371)} MPH</span>
-                  {boostPsi > 0 && (
-                    <>
-                      <span>•</span>
-                      <span className="text-cyan-400 font-bold">{boostPsi} PSI</span>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {/* RPM Bar */}
-              <div className="flex flex-col gap-1 w-32 pb-2">
-                <div className="flex justify-between text-[9px] font-mono text-neutral-400">
-                  <span>RPM</span>
-                  <span>{rpm}</span>
-                </div>
-                <div className="w-full h-2 rounded-full bg-white/10 overflow-hidden">
+                {/* Tachometer Bar */}
+                <div className="mt-3 w-48 sm:w-60 h-2.5 rounded-full bg-neutral-800 overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-emerald-400 via-amber-400 to-red-500 rounded-full transition-all duration-75"
-                    style={{ width: `${Math.min(100, (rpm / (engine.redlineRpm || 8000)) * 100)}%` }}
+                    className={`h-full transition-all duration-75 rounded-full ${
+                      rpm > (engine.redlineRpm || 8000) * 0.9 ? 'bg-red-500 animate-pulse' : 'bg-amber-400'
+                    }`}
+                    style={{
+                      width: `${Math.min(100, (rpm / (engine.redlineRpm || 8000)) * 100)}%`,
+                    }}
                   />
                 </div>
+
+                <div className="flex justify-between text-[10px] font-mono text-neutral-400 mt-1.5">
+                  <span>{rpm} RPM</span>
+                  <span className="text-amber-400 font-bold">{boostPsi} PSI BOOST</span>
+                </div>
               </div>
+
+              {/* Gear Indicator */}
+              <div className="w-20 h-20 rounded-3xl bg-black/80 backdrop-blur-md border border-white/10 flex flex-col items-center justify-center">
+                <span className="text-[9px] font-mono text-neutral-400 uppercase">GEAR</span>
+                <span className="text-3xl font-syne font-black text-amber-400 leading-none mt-0.5">
+                  {currentGear}
+                </span>
+              </div>
+            </div>
+
+            {/* Quick Actions (Camera & Pause) */}
+            <div className="pointer-events-auto flex items-center gap-2">
+              <button
+                onClick={() => {
+                  const next = cameraModeRef.current === 'chase' ? 'hood' : cameraModeRef.current === 'hood' ? 'cockpit' : 'chase';
+                  updateCameraMode(next);
+                }}
+                className="px-4 py-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/10 font-mono text-xs uppercase tracking-wider flex items-center gap-2 cursor-pointer transition-all"
+              >
+                <Camera className="w-4 h-4 text-amber-400" />
+                <span>CAM: {cameraMode.toUpperCase()}</span>
+              </button>
+
+              <button
+                onClick={() => updateSimState('staging')}
+                className="p-2.5 rounded-2xl bg-black/70 hover:bg-black/90 backdrop-blur-md border border-white/10 cursor-pointer transition-all text-neutral-400 hover:text-white"
+                title="Restart or change track"
+              >
+                <RotateCcw className="w-4 h-4" />
+              </button>
             </div>
           </div>
         </div>
       )}
 
       {/* -------------------------------------------------------------------- */}
-      {/* MOBILE ON-SCREEN TOUCH CONTROLS (Always accessible)                  */}
+      {/* MOBILE ON-SCREEN TOUCH CONTROLS                                       */}
       {/* -------------------------------------------------------------------- */}
       {simState === 'racing' && (
         <div className="sm:hidden absolute inset-x-0 bottom-4 z-40 px-4 flex justify-between items-end pointer-events-none">
           {/* Steering Left / Right */}
-          <div className="flex gap-2 pointer-events-auto">
+          <div className="pointer-events-auto flex items-center gap-2">
             <button
               onTouchStart={() => (mobileInputRef.current.steerLeft = true)}
               onTouchEnd={() => (mobileInputRef.current.steerLeft = false)}
-              onMouseDown={() => (mobileInputRef.current.steerLeft = true)}
-              onMouseUp={() => (mobileInputRef.current.steerLeft = false)}
-              className="w-16 h-16 rounded-2xl bg-white/10 active:bg-amber-400/30 border border-white/20 flex items-center justify-center font-bold text-xl select-none"
+              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-amber-400 active:text-black flex items-center justify-center font-bold text-lg select-none"
             >
-              ◀
+              ◄
             </button>
             <button
               onTouchStart={() => (mobileInputRef.current.steerRight = true)}
               onTouchEnd={() => (mobileInputRef.current.steerRight = false)}
-              onMouseDown={() => (mobileInputRef.current.steerRight = true)}
-              onMouseUp={() => (mobileInputRef.current.steerRight = false)}
-              className="w-16 h-16 rounded-2xl bg-white/10 active:bg-amber-400/30 border border-white/20 flex items-center justify-center font-bold text-xl select-none"
+              className="w-16 h-16 rounded-2xl bg-black/70 border border-white/20 active:bg-amber-400 active:text-black flex items-center justify-center font-bold text-lg select-none"
             >
-              ▶
+              ►
             </button>
           </div>
 
-          {/* Pedals: Brake & Gas */}
-          <div className="flex gap-2 pointer-events-auto">
+          {/* Pedals: Brake, Handbrake, Throttle */}
+          <div className="pointer-events-auto flex items-end gap-2">
+            <button
+              onTouchStart={() => (mobileInputRef.current.handbrake = true)}
+              onTouchEnd={() => (mobileInputRef.current.handbrake = false)}
+              className="w-12 h-12 rounded-xl bg-red-500/20 border border-red-500/40 text-[10px] font-mono font-bold uppercase active:bg-red-500 text-red-300 active:text-black flex items-center justify-center select-none"
+            >
+              DRIFT
+            </button>
+
             <button
               onTouchStart={() => (mobileInputRef.current.brake = true)}
               onTouchEnd={() => (mobileInputRef.current.brake = false)}
-              onMouseDown={() => (mobileInputRef.current.brake = true)}
-              onMouseUp={() => (mobileInputRef.current.brake = false)}
-              className="w-16 h-16 rounded-2xl bg-red-600/30 active:bg-red-600/60 border border-red-500/40 flex items-center justify-center font-mono font-bold text-xs uppercase"
+              className="w-14 h-16 rounded-2xl bg-white/10 border border-white/20 text-xs font-mono font-bold uppercase active:bg-white active:text-black flex items-center justify-center select-none"
             >
               BRAKE
             </button>
+
             <button
               onTouchStart={() => (mobileInputRef.current.throttle = true)}
               onTouchEnd={() => (mobileInputRef.current.throttle = false)}
-              onMouseDown={() => (mobileInputRef.current.throttle = true)}
-              onMouseUp={() => (mobileInputRef.current.throttle = false)}
-              className="w-20 h-20 rounded-2xl bg-emerald-500/30 active:bg-emerald-500/60 border border-emerald-400/40 flex items-center justify-center font-mono font-black text-sm uppercase"
+              className="w-16 h-20 rounded-2xl bg-amber-400/20 border border-amber-400/60 text-xs font-mono font-black uppercase active:bg-amber-400 text-amber-300 active:text-black flex items-center justify-center select-none"
             >
               GAS
             </button>
@@ -1333,51 +1358,62 @@ export const RacingSimulator3D: React.FC<RacingSimulator3DProps> = ({
       {simState === 'finished' && finalResults && (
         <div className="absolute inset-0 z-50 bg-[#08080a]/95 backdrop-blur-2xl flex flex-col justify-center items-center p-6 sm:p-12 animate-fadeIn">
           <div className="max-w-xl w-full p-8 sm:p-10 rounded-3xl bg-neutral-900 border border-white/10 shadow-2xl text-center space-y-6">
-            <div className="w-16 h-16 rounded-full bg-amber-400/10 border border-amber-400/30 flex items-center justify-center text-amber-400 mx-auto">
-              <Trophy className="w-8 h-8" />
+            <div className="w-14 h-14 rounded-2xl bg-amber-400/20 border border-amber-400/40 flex items-center justify-center text-amber-400 mx-auto">
+              <Trophy className="w-7 h-7" />
             </div>
 
             <div>
-              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-neutral-400 block mb-1">
-                RACE RESULTS // {currentCircuit.name}
+              <span className="text-[10px] font-mono uppercase tracking-[0.25em] text-neutral-400">
+                OFFICIAL RACE CLASSIFICATION
               </span>
-              <h2 className="font-syne font-black text-4xl text-white uppercase">
-                {finalResults.position === 1 ? 'VICTORY — P1 FINISH' : `FINISHED P${finalResults.position}`}
+              <h2 className="font-syne font-black text-4xl text-white uppercase tracking-tight mt-1">
+                {finalResults.position === 1
+                  ? 'VICTORY — 1ST PLACE'
+                  : `FINISHED P${finalResults.position}`}
               </h2>
+              <p className="text-xs text-neutral-400 mt-1 font-mono">
+                {currentCircuit.name} • {media.name}
+              </p>
             </div>
 
-            <div className="grid grid-cols-3 gap-3 py-4 border-y border-white/10 font-mono text-center">
-              <div>
-                <span className="text-[9px] text-neutral-500 uppercase block">TOTAL TIME</span>
-                <span className="text-sm font-bold text-white">{finalResults.totalTimeStr}</span>
+            {/* Results Grid */}
+            <div className="grid grid-cols-2 gap-3 py-4 border-y border-white/10 font-mono text-xs">
+              <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[10px] text-neutral-500 uppercase block">
+                  {currentCircuit.isDragStrip ? '1/4 MILE ET' : 'TOTAL TIME'}
+                </span>
+                <span className="text-lg font-bold text-white">{finalResults.totalTimeStr}</span>
               </div>
-              <div>
-                <span className="text-[9px] text-neutral-500 uppercase block">BEST LAP</span>
-                <span className="text-sm font-bold text-emerald-400">{finalResults.bestLapStr}</span>
+              <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[10px] text-neutral-500 uppercase block">
+                  {currentCircuit.isDragStrip ? '0-100 SPRINT' : 'BEST LAP'}
+                </span>
+                <span className="text-lg font-bold text-amber-400">{finalResults.bestLapStr}</span>
               </div>
-              <div>
-                <span className="text-[9px] text-neutral-500 uppercase block">TOP SPEED</span>
-                <span className="text-sm font-bold text-amber-400">{finalResults.maxSpeedKmh} KM/H</span>
+              <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[10px] text-neutral-500 uppercase block">
+                  {currentCircuit.isDragStrip ? 'TRAP VELOCITY' : 'TOP VELOCITY'}
+                </span>
+                <span className="text-lg font-bold text-white">{finalResults.maxSpeedKmh} KM/H</span>
               </div>
-            </div>
-
-            <div className="p-4 rounded-xl bg-amber-400/10 border border-amber-400/20 flex items-center justify-between text-xs font-mono">
-              <span className="text-neutral-300">CAREER XP EARNED:</span>
-              <span className="text-amber-400 font-bold">+{finalResults.xpEarned} XP</span>
+              <div className="p-3 rounded-2xl bg-white/[0.02] border border-white/[0.04]">
+                <span className="text-[10px] text-neutral-500 uppercase block">XP REWARD</span>
+                <span className="text-lg font-bold text-emerald-400">+{finalResults.xpEarned} XP</span>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-2">
               <button
-                onClick={() => setSimState('staging')}
+                onClick={() => updateSimState('staging')}
                 className="flex-1 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer"
               >
-                SELECT TRACK
+                RACE AGAIN
               </button>
               <button
-                onClick={handleStartRace}
-                className="flex-1 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all shadow-xl cursor-pointer"
+                onClick={onExit}
+                className="flex-1 py-3 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-syne font-black text-xs uppercase tracking-wider transition-all cursor-pointer shadow-lg"
               >
-                RACE AGAIN
+                RETURN TO GARAGE
               </button>
             </div>
           </div>

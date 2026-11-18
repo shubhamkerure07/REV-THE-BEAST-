@@ -366,7 +366,7 @@ export default function App() {
 
         {/* VIEW G: CIRCUIT RACING SIMULATION */}
         {currentView === 'racing' && (
-          <div className="w-full pt-20 animate-fade-in">
+          <div className="w-full h-screen overflow-hidden animate-fade-in">
             <EditorialRacing
               config={config}
               onNavigate={(view) => {

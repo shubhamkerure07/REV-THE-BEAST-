@@ -14,7 +14,7 @@ export const EditorialRacing: React.FC<EditorialRacingProps> = ({
   showToast,
 }) => {
   return (
-    <div className="w-full h-screen bg-[#08080a] overflow-hidden pt-16">
+    <div className="w-full h-full bg-[#08080a] overflow-hidden">
       <RacingSimulator3D
         config={config}
         onExit={() => onNavigate('garage')}

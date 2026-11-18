@@ -290,7 +290,8 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
         config.modelType === 'beast-v12-ai' ||
         config.modelType === 'beast-ev' ||
         config.modelType === 're-gt650' ||
-        config.modelType === 're-shotgun650';
+        config.modelType === 're-shotgun650' ||
+        config.modelType === 'nissan-gtr-r35';
 
       if (isM4FamilyModel && carInstanceRef.current) {
         carInstanceRef.current.updateAnimations(delta, config);
@@ -372,7 +373,8 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
       config.modelType === 'beast-v12-ai' ||
       config.modelType === 'beast-ev' ||
       config.modelType === 're-gt650' ||
-      config.modelType === 're-shotgun650';
+      config.modelType === 're-shotgun650' ||
+      config.modelType === 'nissan-gtr-r35';
 
     if (carInstanceRef.current) {
       carInstanceRef.current.root.visible = isM4Family;
@@ -503,7 +505,8 @@ export const CarViewer = forwardRef<CarViewerHandle, CarViewerProps>(({ config, 
       config.modelType === 'beast-v12-ai' ||
       config.modelType === 'beast-ev' ||
       config.modelType === 're-gt650' ||
-      config.modelType === 're-shotgun650';
+      config.modelType === 're-shotgun650' ||
+      config.modelType === 'nissan-gtr-r35';
 
     if (config.modelType === 'lambo-aventador' && lamboRef.current) {
       lamboRef.current.updateConfig(config);

@@ -26,12 +26,46 @@ import {
   ExhaustStyle,
   PaintFinish,
   TuningStageConfig,
+  CameraPreset,
+  StudioEnvironment,
 } from '../types';
 import { getVehicleMedia } from '../data/vehicleMedia';
 import { getEngineForModel } from '../data/engines';
 import { engineSound } from '../utils/audio';
 import { CarViewer } from '../three/CarViewer';
 import { getTunedPerformanceStats } from '../utils/vehicleMechanics';
+
+const AVAILABLE_VEHICLES: { id: CarModelType; name: string; brand: string }[] = [
+  { id: 'lambo-aventador', name: 'Aventador SVJ V12', brand: 'Lamborghini' },
+  { id: 'procedural-m4', name: 'M4 Competition Coupé', brand: 'BMW' },
+  { id: 'nissan-gtr-r35', name: 'GT-R Nismo (R35)', brand: 'Nissan' },
+  { id: 'ferrari-sf90', name: 'SF90 Stradale', brand: 'Ferrari' },
+  { id: 'bugatti-chiron', name: 'Chiron Super Sport', brand: 'Bugatti' },
+  { id: 'mustang-gt', name: 'Mustang GT Fastback', brand: 'Ford' },
+  { id: 'gwagon-g63', name: 'AMG G63 G-Wagon', brand: 'Mercedes-AMG' },
+  { id: 'bmw-5series', name: '5 Series M Sport', brand: 'BMW' },
+  { id: 'beast-v12-ai', name: 'Beast V12 R Prototype', brand: 'Beast AI' },
+  { id: 'beast-ev', name: 'Nevera GT (EV)', brand: 'Beast EV' },
+  { id: 'ninja-h2r', name: 'Ninja H2R Superbike', brand: 'Kawasaki' },
+  { id: 're-gt650', name: 'Continental GT 650', brand: 'Royal Enfield' },
+  { id: 're-shotgun650', name: 'Shotgun 650 Bobber', brand: 'Royal Enfield' },
+];
+
+const CAMERA_PRESETS: { id: CameraPreset; label: string }[] = [
+  { id: 'hero', label: '3/4 Hero' },
+  { id: 'front', label: 'Front' },
+  { id: 'side', label: 'Side' },
+  { id: 'rear', label: 'Rear' },
+  { id: 'wheel', label: 'Wheels' },
+  { id: 'exhaust', label: 'Exhaust' },
+];
+
+const LIGHTING_ENVIRONMENTS: { id: StudioEnvironment; label: string }[] = [
+  { id: 'dark-studio', label: 'Showroom' },
+  { id: 'neon-city', label: 'Neon Night' },
+  { id: 'sunset', label: 'Sunset' },
+  { id: 'city', label: 'Daylight' },
+];
 
 interface EditorialCustomizerProps {
   config: CarConfigState;
@@ -190,29 +224,53 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
   };
 
   return (
-    <div className="w-full min-h-screen bg-[#08080a] text-neutral-100 select-none pt-24 pb-24 px-6 sm:px-12 md:px-16 animate-fadeIn">
+    <div className="w-full min-h-screen bg-[#08080a] text-neutral-100 select-none pt-12 pb-24 px-4 sm:px-8 md:px-12 animate-fadeIn">
       <div className="max-w-7xl mx-auto">
-        {/* Top Navigation */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-6 mb-8">
-          <button
-            onClick={onBack}
-            className="flex items-center gap-2 text-neutral-400 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors cursor-pointer group"
-          >
-            <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
-            <span>BACK TO GARAGE</span>
-          </button>
+        {/* Top Navigation & Vehicle Switcher */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/[0.08] pb-6 mb-8">
+          <div className="flex flex-wrap items-center gap-4">
+            <button
+              onClick={onBack}
+              className="flex items-center gap-2 text-neutral-400 hover:text-white font-mono text-xs uppercase tracking-widest transition-colors cursor-pointer group"
+            >
+              <ArrowLeft className="w-4 h-4 group-hover:-translate-x-1 transition-transform" />
+              <span>GARAGE</span>
+            </button>
 
-          <div className="flex items-center gap-3 w-full sm:w-auto">
+            {/* In-Customizer Machine Switcher Dropdown */}
+            <div className="flex items-center gap-2 bg-white/[0.04] border border-white/10 rounded-2xl px-3 py-1.5">
+              <span className="text-[10px] font-mono text-amber-400 font-bold uppercase tracking-widest">
+                MACHINE:
+              </span>
+              <select
+                value={config.modelType}
+                onChange={(e) => {
+                  const newModel = e.target.value as CarModelType;
+                  onChangeConfig((prev) => ({ ...prev, modelType: newModel }));
+                  showToast(`Selected: ${AVAILABLE_VEHICLES.find((v) => v.id === newModel)?.name || newModel}`);
+                }}
+                className="bg-transparent text-xs font-mono text-white font-bold cursor-pointer outline-none border-none pr-2 focus:ring-0"
+              >
+                {AVAILABLE_VEHICLES.map((v) => (
+                  <option key={v.id} value={v.id} className="bg-neutral-900 text-white font-mono">
+                    {v.brand} — {v.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-3 w-full md:w-auto">
             <button
               onClick={handleSaveBuild}
-              className="flex-1 sm:flex-none px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center"
+              className="flex-1 md:flex-none px-5 py-2.5 rounded-full bg-white/[0.06] hover:bg-white/[0.12] text-white border border-white/10 font-mono text-xs font-bold uppercase tracking-wider transition-all cursor-pointer text-center"
             >
               SAVE BUILD
             </button>
 
             <button
               onClick={() => onRace(config.modelType)}
-              className="flex-1 sm:flex-none px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 text-center"
+              className="flex-1 md:flex-none px-6 py-2.5 rounded-full bg-amber-400 hover:bg-amber-300 text-black font-mono text-xs font-black uppercase tracking-wider transition-all cursor-pointer shadow-lg flex items-center justify-center gap-2 text-center"
             >
               <Flag className="w-3.5 h-3.5" />
               <span>RACE THIS SPEC</span>
@@ -221,7 +279,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
         </div>
 
         {/* Studio Grid: Left Studio Canvas + Right Customizer Categories */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-start">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
           {/* LEFT 7 COLS: 3D INTERACTIVE CANVAS / PHOTOGRAPHY PREVIEW */}
           <div className="lg:col-span-7 space-y-4">
             {/* View Mode Switcher Header */}
@@ -263,13 +321,60 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
               </div>
             </div>
 
-            <div className="relative w-full rounded-3xl overflow-hidden bg-neutral-900 border border-white/[0.08] shadow-2xl h-[45vh] sm:h-[55vh] md:h-[65vh]">
+            <div className="relative w-full rounded-3xl overflow-hidden bg-neutral-900 border border-white/[0.08] shadow-2xl h-[48vh] sm:h-[58vh] md:h-[66vh]">
               {viewMode === '3d' ? (
                 <div className="w-full h-full relative">
                   <CarViewer config={config} />
-                  <div className="absolute top-4 left-4 pointer-events-none px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                    <span>WEBGL REAL-TIME SHADER ENGINE</span>
+
+                  {/* Top-Left Engine Tag */}
+                  <div className="absolute top-4 left-4 pointer-events-none px-3 py-1.5 rounded-full bg-black/60 backdrop-blur-md border border-white/10 text-[10px] font-mono text-white flex items-center gap-2 z-10">
+                    <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                    <span>3D REAL-TIME SHADER ENGINE</span>
+                  </div>
+
+                  {/* Top-Right: Studio Lighting Environment Switcher */}
+                  <div className="absolute top-4 right-4 flex items-center gap-1 bg-black/60 backdrop-blur-md border border-white/10 p-1 rounded-2xl pointer-events-auto z-10">
+                    {LIGHTING_ENVIRONMENTS.map((env) => {
+                      const isCurrent = (config.environment || 'dark-studio') === env.id;
+                      return (
+                        <button
+                          key={env.id}
+                          onClick={() => {
+                            onChangeConfig((prev) => ({ ...prev, environment: env.id }));
+                            showToast(`Lighting: ${env.label}`);
+                          }}
+                          className={`px-2.5 py-1 rounded-xl text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer ${
+                            isCurrent
+                              ? 'bg-amber-400 text-black shadow-md'
+                              : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          {env.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  {/* Bottom-Center: Camera Preset Focus Buttons */}
+                  <div className="absolute bottom-24 sm:bottom-28 left-1/2 -translate-x-1/2 flex items-center gap-1 bg-black/70 backdrop-blur-md border border-white/10 p-1 rounded-full pointer-events-auto shadow-2xl z-10 max-w-[95%] overflow-x-auto scrollbar-none">
+                    {CAMERA_PRESETS.map((preset) => {
+                      const isCurrent = (config.cameraPreset || 'hero') === preset.id;
+                      return (
+                        <button
+                          key={preset.id}
+                          onClick={() => {
+                            onChangeConfig((prev) => ({ ...prev, cameraPreset: preset.id }));
+                          }}
+                          className={`px-3 py-1 rounded-full text-[10px] font-mono font-bold uppercase tracking-wider transition-all cursor-pointer whitespace-nowrap ${
+                            isCurrent
+                              ? 'bg-amber-400 text-black shadow-md'
+                              : 'text-neutral-400 hover:text-white hover:bg-white/[0.06]'
+                          }`}
+                        >
+                          {preset.label}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               ) : (
@@ -287,7 +392,7 @@ export const EditorialCustomizer: React.FC<EditorialCustomizerProps> = ({
               )}
 
               {/* Bottom Canvas Overlay Info */}
-              <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none">
+              <div className="absolute bottom-6 left-6 right-6 flex items-end justify-between pointer-events-none z-10">
                 <div className="bg-black/60 backdrop-blur-md p-4 rounded-2xl border border-white/10">
                   <span className="text-[10px] font-mono uppercase tracking-[0.2em] text-neutral-400 font-bold block">
                     {media.brand} // {media.category}

@@ -86,12 +86,85 @@ export function buildLamboAventadorModel(
   });
   lightMaterials.push(taillightEmissiveMat);
 
+  // Immediate procedural supercar fallback geometry so viewer is NEVER blank while GLB loads
+  const fallbackGroup = new THREE.Group();
+  fallbackGroup.name = 'Aventador_Procedural_Fallback';
+
+  const wedgeBodyGeo = new THREE.BoxGeometry(2.1, 0.46, 4.8);
+  const wedgeBody = new THREE.Mesh(wedgeBodyGeo, bodyMat);
+  wedgeBody.position.y = 0.42;
+  wedgeBody.castShadow = true;
+  fallbackGroup.add(wedgeBody);
+
+  const wedgeCabinGeo = new THREE.BoxGeometry(1.7, 0.45, 2.2);
+  const wedgeCabinMat = new THREE.MeshPhysicalMaterial({
+    color: 0x050508,
+    metalness: 0.9,
+    roughness: 0.1,
+    transmission: 0.85,
+    transparent: true,
+  });
+  const wedgeCabin = new THREE.Mesh(wedgeCabinGeo, wedgeCabinMat);
+  wedgeCabin.position.set(0, 0.8, -0.2);
+  wedgeCabin.castShadow = true;
+  fallbackGroup.add(wedgeCabin);
+
+  // Spoiler
+  const spoilerGeo = new THREE.BoxGeometry(1.9, 0.08, 0.4);
+  const spoiler = new THREE.Mesh(spoilerGeo, mirrorCoverMat);
+  spoiler.position.set(0, 0.95, -2.1);
+  fallbackGroup.add(spoiler);
+
+  // Wheels
+  const tireGeo = new THREE.CylinderGeometry(0.36, 0.36, 0.28, 20);
+  tireGeo.rotateZ(Math.PI / 2);
+  const tireMat = new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.85 });
+
+  const wheelPositions = [
+    [-1.02, 0.36, 1.45],
+    [1.02, 0.36, 1.45],
+    [-1.02, 0.36, -1.45],
+    [1.02, 0.36, -1.45],
+  ];
+
+  wheelPositions.forEach(([x, y, z]) => {
+    const wGroup = new THREE.Group();
+    const tire = new THREE.Mesh(tireGeo, tireMat);
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.29, 16).rotateZ(Math.PI / 2), rimMat);
+    wGroup.add(tire, rim);
+    wGroup.position.set(x, y, z);
+    fallbackGroup.add(wGroup);
+  });
+
+  // Headlights
+  const hlGeo = new THREE.BoxGeometry(0.4, 0.08, 0.1);
+  const hlL = new THREE.Mesh(hlGeo, headlightEmissiveMat);
+  hlL.position.set(-0.75, 0.44, 2.38);
+  const hlR = new THREE.Mesh(hlGeo, headlightEmissiveMat);
+  hlR.position.set(0.75, 0.44, 2.38);
+  fallbackGroup.add(hlL, hlR);
+
+  // Taillights
+  const tlGeo = new THREE.BoxGeometry(0.4, 0.08, 0.1);
+  const tlL = new THREE.Mesh(tlGeo, taillightEmissiveMat);
+  tlL.position.set(-0.75, 0.48, -2.38);
+  const tlR = new THREE.Mesh(tlGeo, taillightEmissiveMat);
+  tlR.position.set(0.75, 0.48, -2.38);
+  fallbackGroup.add(tlL, tlR);
+
+  root.add(fallbackGroup);
+
   // Load the GLB
   const loader = new GLTFLoader();
   loader.load(
     '/models/aventador/model.glb',
     (gltf) => {
       const model = gltf.scene;
+
+      // Remove fallback geometry and add high-poly model
+      if (fallbackGroup.parent) {
+        root.remove(fallbackGroup);
+      }
 
       // The model native orientation: front is towards -X, rear is towards +X.
       // Rotating by -Math.PI / 2 (-90°) around Y aligns front towards +Z, rear towards -Z!
